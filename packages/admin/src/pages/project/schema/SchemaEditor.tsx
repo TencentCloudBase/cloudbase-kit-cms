@@ -2,10 +2,11 @@ import React, { useCallback } from 'react'
 import { useRequest } from 'umi'
 import { useConcent } from 'concent'
 import { SchmeaCtx } from 'typings/store'
-import { createSchema, updateSchema } from '@/services/schema'
+import { createSchema, updateSchemaAndCollection, updateSchemaFiled } from '@/services/schema'
 import { Modal, Form, message, Input, Space, Button, Typography, Tooltip } from 'antd'
 import { QuestionCircleTwoTone } from '@ant-design/icons'
 import { getSystemConfigurableFields, getProjectId } from '@/utils'
+import { IS_KIT_MODE } from '@/kitConstants'
 
 const { TextArea } = Input
 
@@ -74,10 +75,10 @@ const SchemaEditor: React.FC = () => {
           description,
           docCreateTimeField,
           docUpdateTimeField,
-          fields: getSystemConfigurableFields({
-            docCreateTimeField,
-            docUpdateTimeField,
-          }),
+          // fields: getSystemConfigurableFields({
+          //   docCreateTimeField,
+          //   docUpdateTimeField,
+          // }),
         })
       }
 
@@ -93,7 +94,8 @@ const SchemaEditor: React.FC = () => {
             {}
           )
 
-        await updateSchema(projectId, currentSchema?._id, diffData)
+        // await updateSchemaFiled(projectId, currentSchema?.id, diffData)
+        IS_KIT_MODE && (await updateSchemaAndCollection(projectId, currentSchema?.id, diffData))
       }
 
       // 复制模型
@@ -157,34 +159,36 @@ const SchemaEditor: React.FC = () => {
           <Input placeholder="展示名称，如文章" />
         </Form.Item>
 
-        <Form.Item
-          name="collectionName"
-          label={
-            <>
-              数据库名
-              {schemaEditAction === 'edit' && (
-                <Typography.Text type="danger">
-                  【更改数据库名会自动重命名原数据库（危险操作！仅管理员可操作！）】
-                </Typography.Text>
-              )}
-            </>
-          }
-          rules={[
-            { required: true, message: '请输入数据库名称！' },
-            {
-              pattern: /^[a-z0-9A-Z_-]+$/,
-              message: '只能使用英文字母、数字、-、_ 等符号',
-            },
-          ]}
-        >
-          <Input placeholder="数据库名，如 article" />
-        </Form.Item>
+        {!IS_KIT_MODE && (
+          <Form.Item
+            name="collectionName"
+            label={
+              <>
+                数据库名
+                {schemaEditAction === 'edit' && (
+                  <Typography.Text type="danger">
+                    【更改数据库名会自动重命名原数据库（危险操作！仅管理员可操作！）】
+                  </Typography.Text>
+                )}
+              </>
+            }
+            rules={[
+              { required: true, message: '请输入数据库名称！' },
+              {
+                pattern: /^[a-z0-9A-Z_-]+$/,
+                message: '只能使用英文字母、数字、-、_ 等符号',
+              },
+            ]}
+          >
+            <Input placeholder="数据库名，如 article" />
+          </Form.Item>
+        )}
 
         <Form.Item label="描述信息" name="description">
           <TextArea placeholder="描述信息，会展示在对应内容的管理页面顶部，可用于内容提示，支持 HTML 片段" />
         </Form.Item>
 
-        {schemaEditAction === 'create' && (
+        {!IS_KIT_MODE && schemaEditAction === 'create' && (
           <>
             <Form.Item
               label={

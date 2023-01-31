@@ -2,7 +2,7 @@ import { Upload, UploadProps } from 'antd'
 import React, { useEffect } from 'react'
 import { useSetState } from 'react-use'
 import { InboxOutlined } from '@ant-design/icons'
-import { fileIdToUrl, getFileNameFromUrl, uploadFile } from '@/utils'
+import { getFileNameFromUrl, uploadFile } from '@/utils'
 
 const { Dragger } = Upload
 

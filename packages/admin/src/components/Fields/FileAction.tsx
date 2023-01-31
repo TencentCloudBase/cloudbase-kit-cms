@@ -1,4 +1,5 @@
-import { copyToClipboard, downloadFile, fileIdToUrl, isFileId } from '@/utils'
+import { IS_CUSTOM_ENV } from '@/kitConstants'
+import { copyToClipboard, downloadFile, fileIdToUrl, getTempFileURL, isFileId } from '@/utils'
 import { CopyTwoTone } from '@ant-design/icons'
 import { Button, message } from 'antd'
 import React, { useState } from 'react'
@@ -53,13 +54,13 @@ export const FileAction: React.FC<{
       <Button
         type="link"
         size="small"
-        onClick={() => {
+        onClick={async () => {
           if (!isFileId(fileUri)) {
             copyToClipboard(fileUri)
             return
           }
 
-          const url = fileIdToUrl(fileUri)
+          const url = IS_CUSTOM_ENV ? await getTempFileURL(fileUri) : fileIdToUrl(fileUri)
           copyToClipboard(url)
           message.success('复制链接成功！')
         }}

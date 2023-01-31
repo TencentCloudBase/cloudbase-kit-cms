@@ -4,6 +4,7 @@ import ProCard from '@ant-design/pro-card'
 import { PageContainer } from '@ant-design/pro-layout'
 import ProjectInfo from './ProjectInfo'
 import ApiAccess from './ApiAccess'
+import { IS_KIT_MODE } from '@/kitConstants'
 
 const { TabPane } = Tabs
 
@@ -26,11 +27,13 @@ export default (): React.ReactNode => {
             </TabPaneContent>
           </TabPane>
 
-          <TabPane tab="API 访问" key="2">
-            <TabPaneContent>
-              <ApiAccess />
-            </TabPaneContent>
-          </TabPane>
+          {!IS_KIT_MODE && (
+            <TabPane tab="API 访问" key="2">
+              <TabPaneContent>
+                <ApiAccess />
+              </TabPaneContent>
+            </TabPane>
+          )}
         </Tabs>
       </ProCard>
     </PageContainer>

@@ -8,6 +8,10 @@ interface ITcbCmsConfing {
   history: 'hash' | 'browser'
   // 环境 Id
   envId: string
+  // 应用clientId
+  clientId: string
+  // 套件id
+  kitId: string
   // 云接入域名
   cloudAccessPath: string
   // 容器模式时的路径

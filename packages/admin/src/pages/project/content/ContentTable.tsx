@@ -15,6 +15,7 @@ import ContentTableSearchForm from './SearchForm'
 import { getTableColumns } from './columns'
 import DataImport from './DataImport'
 import DataExport from './DataExport'
+import { IS_KIT_MODE } from '@/kitConstants'
 
 const { Option } = Select
 
@@ -52,7 +53,7 @@ export const ContentTable: React.FC<{
       const fuzzyFilter = formatSearchParams(searchParams, currentSchema)
 
       try {
-        const { data = [], total } = await getContents(projectId, resource, {
+        const { data = [], total } = await getContents(projectId, currentSchema.id, {
           sort,
           pageSize,
           fuzzyFilter,
@@ -146,7 +147,7 @@ export const ContentTable: React.FC<{
                 },
                 onOk: async () => {
                   try {
-                    await deleteContent(projectId, currentSchema.collectionName, row._id)
+                    await deleteContent(projectId, currentSchema.id, row._id)
                     tableRef?.current?.reload()
                     message.success('删除内容成功')
                   } catch (error) {
@@ -171,18 +172,20 @@ export const ContentTable: React.FC<{
   // 表格 ToolBar
   const toolBarRender = useMemo(
     () => [
-      <Dropdown overlay={searchFieldMenu} key="search">
-        <Button type="primary">
-          <FilterOutlined /> 增加检索
-        </Button>
-      </Dropdown>,
+      !IS_KIT_MODE && (
+        <Dropdown overlay={searchFieldMenu} key="search">
+          <Button type="primary">
+            <FilterOutlined /> 增加检索
+          </Button>
+        </Dropdown>
+      ),
       <Button
         key="button"
         type="primary"
         icon={<PlusOutlined />}
         disabled={!currentSchema.fields?.length}
         onClick={() => {
-          if (!currentSchema?._id) {
+          if (!currentSchema?.id) {
             message.error('请选择需要创建的内容类型！')
             return
           }
@@ -196,13 +199,15 @@ export const ContentTable: React.FC<{
       >
         新建
       </Button>,
-      <DataImport key="import" collectionName={currentSchema.collectionName} />,
-      <DataExport
-        key="export"
-        schema={currentSchema}
-        searchParams={searchParams}
-        collectionName={currentSchema.collectionName}
-      />,
+      !IS_KIT_MODE && <DataImport key="import" collectionName={currentSchema.collectionName} />,
+      !IS_KIT_MODE && (
+        <DataExport
+          key="export"
+          schema={currentSchema}
+          searchParams={searchParams}
+          collectionName={currentSchema.collectionName}
+        />
+      ),
     ],
     [currentSchema, searchParams, searchFields]
   )
@@ -303,7 +308,7 @@ const getTableAlertRender = (projectId: string, currentSchema: Schema, tableRef:
                   onOk: async () => {
                     try {
                       const ids = selectedRows.map((_: any) => _._id)
-                      await batchDeleteContent(projectId, currentSchema.collectionName, ids)
+                      await batchDeleteContent(projectId, currentSchema.id, ids)
                       tableRef?.current?.reload()
                       message.success('删除内容成功')
                     } catch (error) {
@@ -315,9 +320,11 @@ const getTableAlertRender = (projectId: string, currentSchema: Schema, tableRef:
             >
               <DeleteOutlined /> 删除文档
             </Button>
-            <Button size="small" type="primary" onClick={() => setState({ visible: true })}>
-              <ExportOutlined /> 导出数据
-            </Button>
+            {!IS_KIT_MODE && (
+              <Button size="small" type="primary" onClick={() => setState({ visible: true })}>
+                <ExportOutlined /> 导出数据
+              </Button>
+            )}
           </Space>
         </Col>
       </Row>

@@ -10,6 +10,7 @@ import defaultSettings from '../config/defaultSettings'
 import { isDevEnv, getLoginState, getHttpAccessPath, getAuthHeaderAsync } from './utils'
 import * as models from './models'
 import { getSetting } from './services/global'
+import { IS_KIT_MODE } from './kitConstants'
 
 run(models)
 
@@ -23,7 +24,7 @@ export async function getInitialState(): Promise<{
   try {
     // 获取登录态
     loginState = await getLoginState()
-  } catch (error) {
+  } catch (error: any) {
     console.log(error)
     message.error(`CloudBase JS SDK 初始化失败，${error?.message}`)
   }
@@ -46,7 +47,9 @@ export async function getInitialState(): Promise<{
 
   // 获取用户信息
   try {
-    currentUser = await getCurrentUser()
+    currentUser = IS_KIT_MODE
+      ? { _id: '_mock_id', isAdmin: true, username: '' }
+      : await getCurrentUser()
   } catch (e) {
     console.log(e)
   }
@@ -176,7 +179,7 @@ export const request: RequestConfig = {
           ...options,
           headers: {
             ...options?.headers,
-            'x-cloudbase-credentials': res['x-cloudbase-credentials'],
+            ...res,
           },
         }
       }
@@ -203,7 +206,7 @@ export const qiankun = async () => {
   const isLogin = await getLoginState()
 
   // 未登录时返回空配置
-  if (!isLogin) {
+  if (!isLogin || IS_KIT_MODE) {
     return {
       apps: [],
     }

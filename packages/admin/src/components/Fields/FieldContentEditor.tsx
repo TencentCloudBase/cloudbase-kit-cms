@@ -218,7 +218,7 @@ export function getFieldFormItem(field: SchemaField, key: number) {
   const rules = getRules(field)
   const { name, type, description, displayName } = field
 
-  let FieldEditor: any = getFieldEditor(field, key)
+  let FieldEditor = getFieldEditor(field, key)
   let FormItem
 
   switch (type) {

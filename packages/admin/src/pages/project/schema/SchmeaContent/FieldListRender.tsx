@@ -4,7 +4,7 @@ import { FieldTypes } from '@/common'
 import { Card, Space, Typography, Tooltip, Switch, Tag, Spin } from 'antd'
 import { ExclamationCircleTwoTone, QuestionCircleTwoTone } from '@ant-design/icons'
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
-import { updateSchema } from '@/services/schema'
+import { updateSchemaFiled } from '@/services/schema'
 import { ContentCtx, SchmeaCtx } from 'typings/store'
 import { getProjectId, getSchemaCustomFields, getSchemaSystemFields } from '@/utils'
 
@@ -61,7 +61,7 @@ export const SchemaFieldListRender: React.FC<{
     // 更新顺序
     schema.fields = resortedFields
     setSortLoading(true)
-    await updateSchema(projectId, schema?._id, {
+    await updateSchemaFiled(projectId, schema?.id, {
       fields: resortedFields,
     })
 

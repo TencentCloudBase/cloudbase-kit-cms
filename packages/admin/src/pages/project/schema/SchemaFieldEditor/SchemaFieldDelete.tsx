@@ -2,8 +2,9 @@ import { useConcent } from 'concent'
 import React, { useState } from 'react'
 import { Modal, message } from 'antd'
 import { ContentCtx, SchmeaCtx } from 'typings/store'
-import { updateSchema } from '@/services/schema'
+import { deleteSchemaFiled, updateSchemaFiled } from '@/services/schema'
 import { getProjectId } from '@/utils'
+import { IS_KIT_MODE } from '@/kitConstants'
 
 /**
  * 删除字段
@@ -32,7 +33,7 @@ export const SchemaFieldDeleteModal: React.FC<{
       }}
       onOk={async () => {
         setLoading(true)
-        const fields: any[] = (currentSchema.fields || []).slice()
+        const fields = (currentSchema.fields || []).slice()
         const index = fields.findIndex(
           (_: any) => _.id === selectedField.id || _.name === selectedField.name
         )
@@ -42,9 +43,13 @@ export const SchemaFieldDeleteModal: React.FC<{
         }
 
         try {
-          await updateSchema(projectId, currentSchema?._id, {
-            fields,
-          })
+          if (IS_KIT_MODE) {
+            await deleteSchemaFiled(projectId, currentSchema?.id, selectedField.id)
+          } else {
+            await updateSchemaFiled(projectId, currentSchema?.id, {
+              fields,
+            })
+          }
           currentSchema.fields.splice(index, 1)
           message.success('删除字段成功')
           ctx.mr.getSchemas(projectId)

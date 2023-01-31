@@ -3,8 +3,9 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { Modal, message, Space, Checkbox, Typography, Tooltip } from 'antd'
 import { EditTwoTone, DeleteTwoTone, ExportOutlined, CopyOutlined } from '@ant-design/icons'
 import { getProjectId, random, saveContentToFile } from '@/utils'
-import { deleteSchema } from '@/services/schema'
+import { deleteSchemaAndCollection, deleteSchema } from '@/services/schema'
 import { ContentCtx, SchmeaCtx } from 'typings/store'
+import { IS_KIT_MODE } from '@/kitConstants'
 
 export interface TableListItem {
   key: number
@@ -66,13 +67,17 @@ const SchemaEdit: React.FC = () => {
         <Tooltip title="删除模型">
           <DeleteTwoTone style={iconStyle} onClick={() => setDeleteSchmeaVisible(true)} />
         </Tooltip>
-        {/* 导出模型 */}
-        <Tooltip title="导出模型">
-          <ExportOutlined style={{ ...iconStyle, color: '#0052d9' }} onClick={exportSchema} />
-        </Tooltip>
-        <Tooltip title="复制当前模型为新的模型">
-          <CopyOutlined style={{ ...iconStyle, color: '#0052d9' }} onClick={copySchema} />
-        </Tooltip>
+        {!IS_KIT_MODE && (
+          <>
+            {/* 导出模型 */}
+            <Tooltip title="导出模型">
+              <ExportOutlined style={{ ...iconStyle, color: '#0052d9' }} onClick={exportSchema} />
+            </Tooltip>
+            <Tooltip title="复制当前模型为新的模型">
+              <CopyOutlined style={{ ...iconStyle, color: '#0052d9' }} onClick={copySchema} />
+            </Tooltip>
+          </>
+        )}
       </Space>
 
       <DeleteSchemaModal
@@ -113,7 +118,11 @@ export const DeleteSchemaModal: React.FC<{
       onOk={async () => {
         try {
           setLoading(true)
-          await deleteSchema(projectId, currentSchema?._id, deleteCollection)
+          if (IS_KIT_MODE) {
+            await deleteSchemaAndCollection(projectId, currentSchema?.id)
+          } else {
+            await deleteSchema(projectId, currentSchema?.id, deleteCollection)
+          }
           message.success('删除内容模型成功！')
           ctx.dispatch('getSchemas', projectId)
           contentCtx.dispatch('getContentSchemas', projectId)
@@ -127,14 +136,17 @@ export const DeleteSchemaModal: React.FC<{
     >
       <Space direction="vertical">
         <Typography.Text>
-          确认删【{currentSchema?.displayName} ({currentSchema?.collectionName})】内容模型？
+          确认删【{currentSchema?.displayName}
+          {currentSchema?.collectionName && ` (${currentSchema?.collectionName})`}】内容模型？
         </Typography.Text>
-        <Checkbox
-          checked={deleteCollection}
-          onChange={(e) => setDeleteCollection(e.target.checked)}
-        >
-          同时删除数据表（警告：删除后数据无法找回）
-        </Checkbox>
+        {!IS_KIT_MODE && (
+          <Checkbox
+            checked={deleteCollection}
+            onChange={(e) => setDeleteCollection(e.target.checked)}
+          >
+            同时删除数据表（警告：删除后数据无法找回）
+          </Checkbox>
+        )}
       </Space>
     </Modal>
   )

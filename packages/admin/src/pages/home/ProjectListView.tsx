@@ -69,7 +69,7 @@ export default function ProjectListView({
             })
 
             redirectTo('home', {
-              projectId: _._id,
+              projectId: _.id,
             })
           }}
         >

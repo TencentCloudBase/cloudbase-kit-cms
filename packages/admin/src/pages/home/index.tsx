@@ -12,6 +12,7 @@ import ProjectListView from './ProjectListView'
 import ProjectCardView from './ProjectCardView'
 import HomePageContainer from './HomePageContainer'
 import './index.less'
+import { IS_KIT_MODE } from '@/kitConstants'
 
 // 设置图标颜色
 setTwoToneColor('#0052d9')
@@ -183,19 +184,21 @@ export const ProjectCreateModal: React.FC<{
           <Input placeholder="项目名，如官网" />
         </Form.Item>
 
-        <Form.Item
-          label="项目 ID"
-          name="customId"
-          rules={[
-            { required: true, message: '请输入项目 ID！' },
-            {
-              pattern: /^[a-zA-Z0-9]{1,16}$/,
-              message: '项目 ID 仅支持字母与数字，不大于 16 个字符',
-            },
-          ]}
-        >
-          <Input placeholder="项目 ID，如 website，仅支持字母与数字，不大于 16 个字符" />
-        </Form.Item>
+        {!IS_KIT_MODE && (
+          <Form.Item
+            label="项目 ID"
+            name="customId"
+            rules={[
+              { required: true, message: '请输入项目 ID！' },
+              {
+                pattern: /^[a-zA-Z0-9]{1,16}$/,
+                message: '项目 ID 仅支持字母与数字，不大于 16 个字符',
+              },
+            ]}
+          >
+            <Input placeholder="项目 ID，如 website，仅支持字母与数字，不大于 16 个字符" />
+          </Form.Item>
+        )}
 
         <Form.Item label="项目介绍" name="description">
           <Input placeholder="项目介绍，如官网内容管理" />

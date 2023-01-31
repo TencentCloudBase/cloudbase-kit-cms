@@ -193,7 +193,7 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
   )
 
   useEffect(() => {
-    if (project?._id) {
+    if (project?.id) {
       setReadableCollections(project.readableCollections || [])
       setModifiableCollections(project.modifiableCollections || [])
       setDeletableCollections(project.deletableCollections || [])

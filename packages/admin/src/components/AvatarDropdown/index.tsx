@@ -2,10 +2,11 @@ import React, { useCallback } from 'react'
 import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons'
 import { Avatar, Menu, Spin, message, Dropdown } from 'antd'
 import { history, useModel, useAccess } from 'umi'
-import { getCloudBaseApp, getPageQuery, logout } from '@/utils'
+import { getPageQuery, logout } from '@/utils'
 
 import { stringify } from 'querystring'
 import styles from './index.less'
+import { IS_KIT_MODE } from '@/kitConstants'
 
 export interface GlobalHeaderRightProps {
   menu?: boolean
@@ -15,9 +16,9 @@ export interface GlobalHeaderRightProps {
  * 退出登录，并且将当前的 url 保存
  */
 const loginOut = async () => {
-  const app: any = await getCloudBaseApp()
+  // const app: any = await getCloudBaseApp()
 
-  console.log(app)
+  // console.log(app)
 
   // 退出登录
   await logout()
@@ -76,7 +77,7 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = () => {
 
   const menuHeaderDropdown = (
     <Menu className={styles.menu} selectedKeys={[]} onClick={onMenuClick}>
-      {isAdmin && (
+      {!IS_KIT_MODE && isAdmin && (
         <Menu.Item key="settings">
           <SettingOutlined />
           系统设置
@@ -88,7 +89,7 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = () => {
                 个人设置
             </Menu.Item> */}
 
-      <Menu.Divider />
+      {!IS_KIT_MODE && <Menu.Divider />}
       <Menu.Item key="logout">
         <LogoutOutlined />
         退出登录

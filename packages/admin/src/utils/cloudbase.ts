@@ -9,6 +9,9 @@ import { isDevEnv, random } from './common'
 import { getDay, getFullDate, getMonth, getYear } from './date'
 import { downloadFileFromUrl } from './file'
 import { templateCompile } from './templateCompile'
+import { CloudbaseOAuth } from '@cloudbase/oauth'
+import cloudbase from '@tencent/cloudbase-paas-js-sdk/src'
+import { IS_CUSTOM_ENV, IS_KIT_MODE } from '@/kitConstants'
 
 interface IntegrationRes {
   statusCode: number
@@ -18,7 +21,7 @@ interface IntegrationRes {
 }
 
 let app: any
-let auth: any
+let auth: CloudbaseOAuth
 
 initCloudBaseApp()
 
@@ -26,7 +29,7 @@ initCloudBaseApp()
  * 获取 CloudBase App 实例
  */
 export async function getCloudBaseApp() {
-  const loginState = await auth.getLoginState()
+  const loginState = await auth.authApi.getLoginState()
 
   if (!loginState && !isDevEnv()) {
     history.push('/login')
@@ -70,19 +73,41 @@ export function getWxCloudApp() {
  * 初始化云开发 app、auth 实例
  */
 function initCloudBaseApp() {
+  const { envId, region, clientId } = window.TcbCmsConfig || {}
+
   if (!app) {
-    const { envId } = window.TcbCmsConfig || {}
-    app = window.cloudbase.init({
-      env: envId,
-      // 默认可用区为上海
-      region: window.TcbCmsConfig.region || 'ap-shanghai',
-    })
+    if (IS_CUSTOM_ENV) {
+      cloudbase.init({
+        env: envId, // 环境 ID
+        region: region as any,
+        clientId,
+        // clientId:envId,
+      })
+    } else {
+      app = window.cloudbase.init({
+        env: envId,
+        // 默认可用区为上海
+        region: window.TcbCmsConfig.region || 'ap-shanghai',
+      })
+    }
     console.log('init cloudbase app')
   }
 
   if (!auth) {
     console.log('init cloudbase app auth')
-    auth = app.auth({ persistence: 'local' })
+    // auth = app.auth({ persistence: 'local' })
+
+    if (IS_CUSTOM_ENV) {
+      auth = cloudbase.auth()
+    } else {
+      auth = new CloudbaseOAuth({
+        apiOrigin:
+          IS_KIT_MODE && !IS_CUSTOM_ENV
+            ? `https://${envId}.${region}.tcb-api.tencentcloudapi.com`
+            : `https://${envId}.${region}.auth.tcloudbase.com`,
+        clientId: IS_CUSTOM_ENV ? clientId : envId, // 环境 ID
+      })
+    }
   }
 }
 
@@ -93,7 +118,9 @@ function initCloudBaseApp() {
  */
 export async function loginWithPassword(username: string, password: string) {
   // 登陆
-  await auth.signInWithUsernameAndPassword(username, password)
+  // await auth.signInWithUsernameAndPassword(username, password)
+  return auth.authApi.signIn({ username, password })
+  // return IS_CUSTOM_ENV?auth.authApi.signInAnonymously():auth.authApi.signIn({username,password})
 }
 
 /**
@@ -101,14 +128,19 @@ export async function loginWithPassword(username: string, password: string) {
  */
 export async function getLoginState() {
   // 获取登录态
-  return auth.getLoginState()
+  return auth.authApi.getLoginState()
 }
 
 /**
  * 同步获取 x-cloudbase-credentials
  */
-export function getAuthHeader() {
-  return auth.getAuthHeader()
+export async function getCredentials() {
+  return auth.oauth2client.getCredentials()
+}
+
+/** 根据credentials获取请求header */
+export function getAuthHeader(credentials: string) {
+  return { 'x-cloudbase-credentials': credentials }
 }
 
 let gotAuthHeader = false
@@ -118,25 +150,58 @@ let gotAuthTime = 0
  */
 export async function getAuthHeaderAsync() {
   // 直接读取本地
-  let res = auth.getAuthHeader()
+  let res = await getCredentials()
   const diff = Date.now() - gotAuthTime
 
   // TODO: 当期 SDK 同步获取的 token 可能是过期的
   // 临时解决办法：在首次获取时、间隔大于 3500S 时，刷新 token
-  if (!res?.['x-cloudbase-credentials'] || !gotAuthHeader || diff > 3500000) {
-    res = await auth.getAuthHeaderAsync()
+  if (!res?.access_token || !gotAuthHeader || diff > 3500000) {
+    res = await auth.oauth2client.getCredentialsAsync()
     gotAuthHeader = true
     gotAuthTime = Date.now()
   }
 
-  return res
+  return Promise.resolve(getAuthHeader(res?.access_token || ''))
 }
 
 /**
  * 退出登录
  */
 export async function logout() {
-  await auth.signOut()
+  await auth.authApi.signOut()
+}
+
+/** url在不同模式下的改造 */
+function reqParamFormat(oriUrl: string, options: RequestOptionsInit) {
+  let url = oriUrl
+  const isGetMethod = !options?.method || options.method === 'GET'
+  const method = isGetMethod ? 'GET' : options.method
+  let query: { [key: string]: string } = {}
+  if (!!options?.data && isGetMethod) {
+    const paramsStrs = Object.keys(options.data).map(
+      (k) => `${k}=${encodeURIComponent(options.data[k])}`
+    )
+    const hasQuestionSign = url.includes('?')
+    const hasParam = url.split('?')?.[1]?.length > 0
+    url = `${url}${hasQuestionSign ? '' : '?'}${hasParam ? '&' : ''}${paramsStrs.join('&')}`
+  }
+
+  const queryStr = url.split('?')?.[1]
+  if (queryStr?.length > 0) {
+    queryStr.split('&').map((kvStr) => {
+      const [k, v = ''] = kvStr.split('=')
+      query[k] = decodeURIComponent(v)
+      return null
+    })
+  }
+
+  return {
+    pureUrl: url.split('?')?.[0] || '',
+    url: isGetMethod ? url : url.split('?')?.[0],
+    method,
+    query: isGetMethod ? query : undefined,
+    isGetMethod,
+  }
 }
 
 /**
@@ -146,8 +211,61 @@ export async function tcbRequest<T = any>(
   url: string,
   options: RequestOptionsInit & { skipErrorHandler?: boolean } = {}
 ): Promise<T> {
-  if (isDevEnv() || SERVER_MODE) {
-    return request<T>(url, options)
+  if (IS_KIT_MODE && !/\/auth\/v1\//.test(url) && (isDevEnv() || SERVER_MODE)) {
+    const { envId, region, kitId } = window.TcbCmsConfig || {}
+    const reqParam = reqParamFormat(url, { ...(options || {}) })
+    let result: any
+    if (IS_CUSTOM_ENV) {
+      result = await cloudbase.kits().request({
+        url: `/cms/${kitId}/v1${reqParam.pureUrl}`,
+        method: reqParam.method as any,
+        // body: options.body,
+        body: !reqParam?.isGetMethod && !!options?.data ? JSON.stringify(options.data) : undefined,
+        query: reqParam?.query,
+        headers: { ...(options.headers || {}), 'Content-Type': 'application/json' } as any,
+        timeout: options?.timeout || 3000,
+      })
+
+      // 错误处理
+      if (result?.code !== 'NORMAL') {
+        notification.error({
+          message: '请求错误',
+          description: `服务异常：${result?.status || '--'}: ${url}`,
+        })
+      }
+      return result.result
+    } else {
+      // 重置url
+      // eslint-disable-next-line no-param-reassign
+      url = `https://tcb.${region}.kits.tcloudbase.com/cms/${kitId}/v1${url}`
+
+      result = await fetch(reqParamFormat(url, { ...(options || {}) }).url, {
+        method: reqParam.method,
+        body: !reqParam?.isGetMethod && !!options?.data ? JSON.stringify(options.data) : undefined,
+        headers: { ...(options.headers || {}), 'Content-Type': 'application/json' },
+      })
+      const resultJson = await result.json()
+      const data = parseIntegrationRes({
+        body: resultJson,
+        statusCode: result.status,
+        headers: result.headers as any,
+        isBase64Encoded: false,
+      })
+      // console.error("options::",url,options,result,data,resultJson);
+
+      // const headerrsp=await getAuthHeaderAsync();
+      // console.error("headerrsp::",headerrsp);
+
+      // 错误处理
+      if (data?.code !== 'NORMAL') {
+        notification.error({
+          message: '请求错误',
+          description: `服务异常：${result.status}: ${url}`,
+        })
+      }
+      return data.result
+    }
+    // return request<T>(url, options)
   }
 
   const { method, params, data } = options
@@ -196,7 +314,7 @@ export async function callWxOpenAPI(action: string, data?: Record<string, any>) 
   const wxCloudApp = getWxCloudApp()
 
   // 添加 authHeader
-  const authHeader = getAuthHeader()
+  const authHeader = await getAuthHeaderAsync()
 
   const functionName = `${RESOURCE_PREFIX}-openapi`
 
@@ -239,6 +357,8 @@ function parseIntegrationRes(result: IntegrationRes) {
 
   return body
 }
+
+const STORAGE_BASE_URL = `/v1/storages`
 
 /**
  * 上传文件到文件存储、静态托管
@@ -340,6 +460,103 @@ export async function uploadFile(options: {
     }
   }
 
+  // 上传文件到云存储Kit版
+  if (IS_KIT_MODE) {
+    // 获取上载目录
+    const { envId, region } = window.TcbCmsConfig || {}
+    if (!IS_CUSTOM_ENV) {
+      const credentials = await getCredentials()
+      const preUploadRsp = await fetch(
+        `https://${envId}.${region}.tcb-api.tencentcloudapi.com/web`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            access_token: credentials?.access_token,
+            action: 'storage.getUploadMetadata',
+            dataVersion: '2020-01-10',
+            env: envId,
+            path: uploadFilePath,
+          }),
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+      const preRspJson: {
+        data: {
+          authorization: string
+          cosFileId: string
+          download_url: string
+          fileId: string
+          token: string
+          url: string
+        }
+      } = await preUploadRsp.json()
+
+      // 执行上载操作
+      const formData = new FormData()
+      formData.append('key', uploadFilePath)
+      formData.append('signature', preRspJson.data.authorization)
+      formData.append('x-cos-meta-fileid', preRspJson.data.cosFileId)
+      formData.append('x-cos-security-token', preRspJson.data.token)
+      formData.append('success_action_status', '201')
+      formData.append('file', file)
+      const uploadRsp = await fetch(preRspJson.data.url, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: formData,
+      })
+      // const uploadJson=await uploadRsp.json();
+
+      // 刷新上载进度
+      onProgress?.(100)
+      return {
+        fileId: preRspJson.data.fileId,
+        url: preRspJson.data.download_url,
+      }
+    } else {
+      const attachedInfos: {
+        authorization: string
+        cloudObjectId: string
+        downloadUrl: string
+        objectId: string
+        token: string
+        uploadUrl: string
+        cloudObjectMeta: string
+      }[] = await cloudbase.storage().request({
+        method: 'POST',
+        url: `${STORAGE_BASE_URL}/get-objects-upload-info`,
+        body: [
+          {
+            objectId: `${Math.floor(Math.random() * 1000) + 1000}${Date.now()}_${file.name}`,
+          },
+        ] as any,
+        query: {},
+        // enableAbort: true,
+        timeout: 3000,
+      })
+
+      /** 本地调试如果上传文件报跨域错误，可以在https://console.cloud.tencent.com/cos/bucket找到对应的cos桶，设置跨域策略（如：http://localhost:8000） */
+      const attachedInfo = attachedInfos?.[0]
+      await fetch(attachedInfo?.uploadUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': file.type,
+          Authorization: attachedInfo?.authorization,
+          'x-cos-meta-fileid': attachedInfo?.cloudObjectMeta,
+          'x-cos-security-token': attachedInfo?.token,
+        },
+        // body:file,
+        body: new Blob([file]),
+      })
+
+      // 刷新上载进度
+      onProgress?.(100)
+      return {
+        fileId: attachedInfo.cloudObjectId,
+        url: attachedInfo.downloadUrl,
+      }
+    }
+  }
+
   // 上传文件到云存储
   const result = await app.uploadFile({
     filePath: file,
@@ -361,6 +578,10 @@ export async function uploadFile(options: {
 
 // 获取文件的临时访问链接
 export async function getTempFileURL(fileID: string): Promise<string> {
+  if (IS_KIT_MODE) {
+    const kitRsp = await kitBatchGetTempFileURL([fileID])
+    return kitRsp?.[0]?.tempFileURL || ''
+  }
   const app = await getCloudBaseApp()
   const result = await app.getTempFileURL({
     fileList: [fileID],
@@ -371,6 +592,61 @@ export async function getTempFileURL(fileID: string): Promise<string> {
   }
 
   return result.fileList[0].tempFileURL
+}
+
+/** kit版批量获取文件临时访问链接 */
+export async function kitBatchGetTempFileURL(
+  fileIds: string[]
+): Promise<
+  {
+    fileID: string
+    tempFileURL: string
+  }[]
+> {
+  if (!fileIds?.length) return []
+  const { envId, region } = window.TcbCmsConfig || {}
+  if (IS_KIT_MODE) {
+    const param = fileIds.map((idItem) => ({ cloudObjectId: idItem, maxAge: 120 }))
+    const dataList: {
+      cloudObjectId: string
+      downloadUrl: string
+    }[] = await cloudbase.storage().request({
+      method: 'POST',
+      url: `${STORAGE_BASE_URL}/get-objects-download-info`,
+      body: param as any,
+      query: {},
+      // enableAbort: true,
+      timeout: 3000,
+    })
+
+    if (dataList?.length !== fileIds.length) {
+      throw new Error(`图片地址获取错误`)
+    }
+
+    return dataList.map((item) => ({ fileID: item.cloudObjectId, tempFileURL: item.downloadUrl }))
+  } else {
+    const credentials = await getCredentials()
+    const result: any = await fetch(`https://${envId}.${region}.tcb-api.tencentcloudapi.com/web`, {
+      method: 'POST',
+      body: JSON.stringify({
+        access_token: credentials?.access_token,
+        action: 'storage.batchGetDownloadUrl',
+        dataVersion: '2020-01-10',
+        env: envId,
+        file_list: fileIds.map((idItem) => ({ fileid: idItem })),
+      }),
+      headers: { 'Content-Type': 'application/json' },
+    })
+    const resultJson = await result.json()
+
+    resultJson?.data?.download_list.forEach((ret: any) => {
+      if (ret.code !== 'SUCCESS') {
+        throw new Error(ret.code)
+      }
+    })
+
+    return resultJson.data.download_list
+  }
 }
 
 /**
@@ -384,6 +660,9 @@ export async function batchGetTempFileURL(
     tempFileURL: string
   }[]
 > {
+  if (IS_KIT_MODE) {
+    return kitBatchGetTempFileURL(fileIds)
+  }
   if (!fileIds?.length) return []
   const app = await getCloudBaseApp()
   const result = await app.getTempFileURL({

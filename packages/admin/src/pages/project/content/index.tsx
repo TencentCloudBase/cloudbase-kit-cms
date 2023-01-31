@@ -7,6 +7,8 @@ import { PageContainer } from '@ant-design/pro-layout'
 import React, { ReactNode, useEffect, useState } from 'react'
 import { getProjectId, redirectTo } from '@/utils'
 import { ContentTable } from './ContentTable'
+import { IS_KIT_MODE } from '@/kitConstants'
+import { getSchemaFileds } from '@/services/schema'
 
 export default (): React.ReactNode => {
   const projectId = getProjectId()
@@ -18,7 +20,7 @@ export default (): React.ReactNode => {
     state: { schemas },
   } = ctx
 
-  const currentSchema = schemas?.find((item: Schema) => item._id === schemaId)
+  const currentSchema = schemas?.find((item) => item.id === schemaId)
 
   // HACK: 切换模型时卸载 Table，强制重新加载数据
   // 直接 Reset 表格并加载数据，会保留上一个模型的列，效果不好
@@ -28,6 +30,23 @@ export default (): React.ReactNode => {
     setTimeout(() => {
       setContentLoading(false)
     }, 200)
+
+    // 拉取fileds列表
+    if (IS_KIT_MODE && !!currentSchema?.id && !currentSchema?.fields) {
+      getSchemaFileds(projectId, currentSchema.id).then((res) => {
+        const newSchema = {
+          ...currentSchema,
+          fields: res.data.map((item) => ({ ...item?.['schema'], id: item.id })),
+        }
+        const schemaIndex = schemas.findIndex((item) => item.id === currentSchema.id)
+        const newSchemaList = [...schemas]
+        newSchemaList.splice(schemaIndex, 1, newSchema)
+        !!res?.data &&
+          ctx.setState({
+            schemas: newSchemaList,
+          })
+      })
+    }
 
     // 显示保存的检索条件
     if (currentSchema?.searchFields?.length) {

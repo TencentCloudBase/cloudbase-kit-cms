@@ -145,7 +145,7 @@ interface SchemaField {
  * 模型描述
  */
 interface Schema {
-  _id: string
+  id: string
 
   displayName: string
 
@@ -168,7 +168,7 @@ interface Schema {
   // 文件更新数据字段名
   docUpdateTimeField: string
 
-  _creatTime: number
+  creatTime: number
 
-  _updateTime: number
+  updateTime: number
 }

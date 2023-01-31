@@ -28,11 +28,11 @@ export default () => {
   useEffect(() => {
     if (!data) return
     const { schema, project } = data
-    const projectId = project?._id || schema?.projectId
+    const projectId = project?.id || schema?.projectId
 
     // 跳转到对应的集合管理页面
-    if (schema?._id) {
-      redirectTo(`content/${schema._id}`, {
+    if (schema?.id) {
+      redirectTo(`content/${schema.id}`, {
         projectId,
       })
     } else if (project) {

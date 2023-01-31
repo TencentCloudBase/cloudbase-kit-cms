@@ -1,11 +1,10 @@
 import { tcbRequest } from '@/utils'
 
-export async function getProject(id: string) {
-  return tcbRequest<{
-    data: Project
-  }>(`/projects/${id}`, {
+export async function getProject(id: string): Promise<{ data: Project }> {
+  const res = await tcbRequest(`/projects/${id}`, {
     method: 'GET',
   })
+  return { data: res }
 }
 
 export async function getProjects() {

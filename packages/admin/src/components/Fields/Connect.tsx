@@ -2,9 +2,16 @@ import React, { useState } from 'react'
 import { Typography, message, Tag, Select, Spin } from 'antd'
 import { useRequest } from 'umi'
 import { useConcent } from 'concent'
-import { getContentSchema, getContents, Options } from '@/services/content'
+import {
+  getContentSchema,
+  getContents,
+  Options,
+  formatServiceContent,
+  getAllContents,
+} from '@/services/content'
 import { calculateFieldWidth, getProjectId, getValueOrSlug } from '@/utils'
 import { ContentCtx } from 'typings/store'
+import { IS_KIT_MODE } from '@/kitConstants'
 
 const { Option } = Select
 const { Text, Paragraph } = Typography
@@ -35,10 +42,12 @@ export const IConnectRender: React.FC<{
 
   if (!value || typeof value === 'string' || typeof value?.[0] === 'string') return <span>-</span>
 
+  const formatValue: IConnectValue = IS_KIT_MODE ? formatServiceContent([value])[0] : value
+
   if (!connectMany) {
     return (
       <Text ellipsis style={{ width }}>
-        {getConnectFieldDisplayText(value, schemas, field)}
+        {getConnectFieldDisplayText(formatValue, schemas, field)}
       </Text>
     )
   }
@@ -76,7 +85,7 @@ export const IConnectEditor: React.FC<{
   useRequest(
     async () => {
       setLoading(true)
-      let connectSchema = schemas.find((_: Schema) => _._id === connectResource)
+      let connectSchema = schemas.find((_: Schema) => _.id === connectResource)
 
       console.log('关联', connectSchema)
       // 后台获取 Schema
@@ -96,7 +105,12 @@ export const IConnectEditor: React.FC<{
         }
       }
 
-      const { data } = await getContents(projectId, connectSchema.collectionName, fetchOptions)
+      // const { data } = await getContents(projectId, IS_KIT_MODE ? connectResource : connectSchema.collectionName, fetchOptions)
+      const { data } = await getAllContents(
+        projectId,
+        IS_KIT_MODE ? connectResource : connectSchema.collectionName,
+        fetchOptions
+      )
 
       setDocs(data)
       setLoading(false)
@@ -163,7 +177,7 @@ const getConnectFieldDisplayText = (doc: any, schemas: Schema[], field: SchemaFi
   const { connectField, connectResource } = field
 
   // 当前关联字段 => 关联 schema 的信息
-  const connectedSchema = schemas.find((_: Schema) => _._id === connectResource)
+  const connectedSchema = schemas.find((_: Schema) => _.id === connectResource)
 
   // 关联字段的信息
   const connectedFieldInfo = connectedSchema?.fields.find((_) => _.name === connectField)
@@ -185,7 +199,7 @@ const getConnectField = (schemas: Schema[], field: SchemaField) => {
   const { connectField, connectResource } = field
 
   // 当前关联字段 => 关联 schema 的信息
-  const connectedSchema = schemas.find((_) => _._id === connectResource)
+  const connectedSchema = schemas.find((_) => _.id === connectResource)
 
   // 关联字段的信息
   let connectedFieldInfo = connectedSchema?.fields.find((_) => _.name === connectField)
@@ -193,7 +207,7 @@ const getConnectField = (schemas: Schema[], field: SchemaField) => {
   // 关联的字段，又是一个关联类型，则展示关联字段关联的字段
   // A -> B -> C
   if (connectedFieldInfo?.connectResource) {
-    const nestConnectSchema = schemas.find((_) => _._id === connectedFieldInfo?.connectResource)
+    const nestConnectSchema = schemas.find((_) => _.id === connectedFieldInfo?.connectResource)
     connectedFieldInfo = nestConnectSchema?.fields.find(
       (_) => _.name === connectedFieldInfo?.connectField
     )

@@ -262,7 +262,7 @@ const MenuConfigModal: React.FC<{
         name="applyProjects"
         label="应用项目（仅在选择的项目中展示此项菜单，默认为全部项目中展示）"
         options={projects?.map((project) => ({
-          value: project._id,
+          value: project.id,
           label: (
             <>
               <h4>{project.name}</h4>

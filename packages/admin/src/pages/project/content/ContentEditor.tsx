@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useConcent } from 'concent'
 import { useParams, useRequest, history } from 'umi'
 import { Form, message, Space, Button, Row, Col, Input, Typography } from 'antd'
@@ -13,6 +13,8 @@ import {
   getProjectId,
   getSchemaCustomFields,
 } from '@/utils'
+import { IS_KIT_MODE } from '@/kitConstants'
+import { getSchemaFileds } from '@/services/schema'
 
 const { Text } = Typography
 
@@ -26,7 +28,28 @@ const ContentEditor: React.FC = () => {
   } = ctx
 
   // 文档模型
-  const schema: Schema = schemas?.find((item: Schema) => item._id === schemaId) || currentSchema
+  const schema: Schema = schemas?.find((item: Schema) => item.id === schemaId) || currentSchema
+
+  // 为当前选择的模型拉取数据格式
+  useEffect(() => {
+    if (IS_KIT_MODE && !!schema?.id && !schema?.fields) {
+      const projectId = getProjectId()
+      getSchemaFileds(projectId, schema.id).then((res) => {
+        const fields = res.data.map((item) => ({ ...item?.['schema'], id: item.id }))
+        const schemaIndex = (schemas as Schema[])?.findIndex((item) => item.id === schemaId)
+        const newSchemas = [...schemas]
+        newSchemas[schemaIndex].fields = [...fields]
+        !!res?.data &&
+          ctx.setState({
+            schemas: [...newSchemas],
+          })
+        !!res?.data &&
+          ctx.setState({
+            currentSchema: { ...currentSchema, fields },
+          })
+      })
+    }
+  }, [schema, currentSchema])
 
   // 表单初始值
   const initialValues = getDocInitialValues(contentAction, schema, selectedContent)
@@ -35,13 +58,13 @@ const ContentEditor: React.FC = () => {
   const { run, loading } = useRequest(
     async (payload: any) => {
       if (contentAction === 'create') {
-        await createContent(projectId, schema?.collectionName, payload)
+        await createContent(projectId, schema?.id, payload)
       }
 
       if (contentAction === 'edit') {
         // 只更新变更过的字段
         const updatedData = getDocChangedValues(initialValues, payload)
-        await updateContent(projectId, schema?.collectionName, selectedContent._id, updatedData)
+        await updateContent(projectId, schema?.id, selectedContent._id, updatedData)
       }
     },
     {

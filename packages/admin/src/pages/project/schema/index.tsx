@@ -13,6 +13,7 @@ import SchemaMenuList from './SchemaMenuList'
 import SchemaEditor from './SchemaEditor'
 import SchemaFieldPicker from './SchemaFieldPicker'
 import './index.less'
+import { IS_KIT_MODE } from '@/kitConstants'
 
 export interface TableListItem {
   key: number
@@ -51,14 +52,18 @@ export default (): React.ReactNode => {
             <PlusOutlined />
             新建模型
           </Button>
-          <Button type="primary" onClick={() => setExportVisible(true)}>
-            <ExportOutlined />
-            导出模型
-          </Button>
-          <Button type="primary" onClick={() => setImportVisible(true)}>
-            <ImportOutlined />
-            导入模型
-          </Button>
+          {!IS_KIT_MODE && (
+            <>
+              <Button type="primary" onClick={() => setExportVisible(true)}>
+                <ExportOutlined />
+                导出模型
+              </Button>
+              <Button type="primary" onClick={() => setImportVisible(true)}>
+                <ImportOutlined />
+                导入模型
+              </Button>
+            </>
+          )}
         </Space>
       }
     >

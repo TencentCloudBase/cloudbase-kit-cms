@@ -45,13 +45,13 @@ const defaultSystemMenuData: MenuDataItem[] = [
     icon: <DatabaseTwoTone />,
     children: [],
   },
-  {
-    authority: 'canWebhook',
-    path: '/project/webhook',
-    name: 'Webhook',
-    icon: <RocketTwoTone />,
-    children: [],
-  },
+  // {
+  //   authority: 'canWebhook',
+  //   path: '/project/webhook',
+  //   name: 'Webhook',
+  //   icon: <RocketTwoTone />,
+  //   children: [],
+  // },
   {
     authority: 'isAdmin',
     path: '/project/setting',
@@ -161,7 +161,7 @@ const Layout: React.FC<any> = (props) => {
   // 内容集合菜单
   const contentChildMenus = schemas?.map((schema: Schema) => ({
     name: schema.displayName,
-    path: `/project/content/${schema._id}`,
+    path: `/project/content/${schema.id}`,
   }))
 
   // HACK: 强制菜单重新渲染，修复菜单栏在获取数据后不自动渲染的问题

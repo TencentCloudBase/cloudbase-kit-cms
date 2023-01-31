@@ -1,7 +1,7 @@
 import { useConcent } from 'concent'
 import { useRequest } from 'umi'
 import React, { useState, useEffect, useMemo } from 'react'
-import { updateSchema } from '@/services/schema'
+import { createSchemaFiled, getSchemaFileds, updateSchemaFiled } from '@/services/schema'
 import {
   Row,
   Col,
@@ -28,6 +28,7 @@ import {
   getProjectId,
 } from '@/utils'
 import { getFieldDefaultValueInput, getFieldFormItem } from './Field'
+import { IS_KIT_MODE } from '@/kitConstants'
 
 const { TextArea } = Input
 const { Text } = Typography
@@ -92,16 +93,25 @@ export const SchemaFieldEditorModal: React.FC<{
 
       // 创建新的字段
       if (fieldAction === 'create') {
-        fields.push({
+        if (!IS_KIT_MODE) {
+          fields.push({
+            ...field,
+            order: fields.length,
+            type: selectedField.type,
+            id: IS_KIT_MODE ? undefined : random(32),
+          } as any)
+
+          // 补充缺失的系统字段
+          const missingSystemFields = getMissingSystemFields(currentSchema)
+          fields.push(...missingSystemFields)
+        }
+
+        // 创建 schema field
+        await createSchemaFiled(projectId, currentSchema?.id || '', {
           ...field,
           order: fields.length,
           type: selectedField.type,
-          id: random(32),
-        } as any)
-
-        // 补充确实的系统字段
-        const missingSystemFields = getMissingSystemFields(currentSchema)
-        fields.push(...missingSystemFields)
+        })
       }
 
       // 编辑字段
@@ -120,12 +130,21 @@ export const SchemaFieldEditorModal: React.FC<{
         } else {
           fields.push(fieldData)
         }
+
+        // 更新 schema fields
+        if (IS_KIT_MODE) {
+          await updateSchemaFiled(projectId, currentSchema?.id || '', {
+            fields: [fieldData],
+          })
+        }
       }
 
       // 更新 schema fields
-      await updateSchema(projectId, currentSchema?._id || '', {
-        fields,
-      })
+      if (!IS_KIT_MODE) {
+        await updateSchemaFiled(projectId, currentSchema?.id || '', {
+          fields,
+        })
+      }
 
       // 重新加载数据
       ctx.mr.getSchemas(projectId)
@@ -159,7 +178,7 @@ export const SchemaFieldEditorModal: React.FC<{
   // 编辑字段
   useEffect(() => {
     if (selectedField?.connectResource) {
-      const schema = schemas.find((_: Schema) => _._id === selectedField.connectResource)
+      const schema = schemas.find((_: Schema) => _.id === selectedField.connectResource)
       setConnectSchema(schema)
     }
 
@@ -167,6 +186,20 @@ export const SchemaFieldEditorModal: React.FC<{
       setFormValue(selectedField)
     }
   }, [selectedField])
+
+  /** 无头套件模式下，拉接口获取fields */
+  useEffect(() => {
+    if (IS_KIT_MODE && !!connectSchema?.id && !connectSchema?.fields) {
+      const projectId = getProjectId()
+      const curId = connectSchema.id
+      getSchemaFileds(projectId, connectSchema.id).then((res) => {
+        const fields = res.data.map((item) => ({ ...item?.['schema'], id: item.id }))
+        if (curId === connectSchema.id) {
+          setConnectSchema({ ...connectSchema, fields })
+        }
+      })
+    }
+  }, [selectedField?.type, connectSchema])
 
   // 是否是系统保留字段
   const isFieldNameReserved = ReservedFieldNames.includes(formValue?.name)
@@ -207,7 +240,7 @@ export const SchemaFieldEditorModal: React.FC<{
         initialValues={InitailValues}
         onValuesChange={(changed, v) => {
           if (changed.connectResource) {
-            const schema = schemas.find((_: Schema) => _._id === v.connectResource)
+            const schema = schemas.find((_: Schema) => _.id === v.connectResource)
             setConnectSchema(schema)
           }
 

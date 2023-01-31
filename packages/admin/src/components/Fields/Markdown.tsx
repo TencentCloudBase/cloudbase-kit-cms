@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import VditorX from 'vditor'
 import 'vditor/dist/index.css'
-import { getAuthHeader, getHttpAccessPath } from '@/utils'
+import { getAuthHeader, getAuthHeaderAsync, getHttpAccessPath } from '@/utils'
 
 // 工具栏
 const Toolbar = [
@@ -57,9 +57,19 @@ export const MarkdownEditor: React.FC<{
 }> = (props) => {
   const { value, id = 'default', onChange = (...args: any) => {} } = props
 
-  const authHeader = getAuthHeader()
+  const [authHeader, setAuthHeader] = useState<any>(null)
 
   useEffect(() => {
+    getAuthHeaderAsync().then((res) => {
+      setAuthHeader(res)
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!authHeader) {
+      return
+    }
+
     // eslint-disable-next-line
     new VditorX(`${id}-editor`, {
       value,
@@ -81,7 +91,7 @@ export const MarkdownEditor: React.FC<{
         enable: false,
       },
     })
-  }, [authHeader?.['x-cloudbase-credentials']])
+  }, [authHeader])
 
   return <div id={`${id}-editor`} />
 }

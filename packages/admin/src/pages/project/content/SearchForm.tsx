@@ -18,7 +18,7 @@ import { IDatePicker, IConnectEditor, IDateRangePicker } from '@/components/Fiel
 import { useConcent } from 'concent'
 import { ContentCtx } from 'typings/store'
 import { calculateFieldWidth, getProjectId } from '@/utils'
-import { updateSchema } from '@/services/schema'
+import { updateSchemaFiled } from '@/services/schema'
 import { useRequest } from 'umi'
 
 const { Option } = Select
@@ -49,7 +49,7 @@ const ContentTableSearchForm: React.FC<{
   // 保存检索条件
   const { run: saveSearchFields, loading } = useRequest(
     async () => {
-      await updateSchema(projectId, schema._id, {
+      await updateSchemaFiled(projectId, schema.id, {
         searchFields,
       })
       ctx.mr.getContentSchemas(projectId)
@@ -93,7 +93,7 @@ const ContentTableSearchForm: React.FC<{
                       },
                       onOk: async () => {
                         try {
-                          await updateSchema(projectId, schema._id, {
+                          await updateSchemaFiled(projectId, schema.id, {
                             searchFields: [],
                           })
                           message.success('重置检索条件成功！')

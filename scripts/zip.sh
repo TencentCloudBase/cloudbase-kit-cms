@@ -17,8 +17,6 @@ cd -
 cp -R ./packages/admin/dist/* ./packages/cms-init/build
 # 拷贝 sms 跳转页代码
 cp -R ./packages/cms-sms-page/dist/* ./packages/cms-init/sms-dist
-# 添加到 service 服务
-cp -R ./packages/cms-sms-page/dist/* ./packages/service/dist/modules/projects/operation/template
 
 cd $__ABS_PATH__
 
@@ -33,12 +31,12 @@ zipFunction() {
   cd -
 }
 
-zipFunction service
+# zipFunction service
 zipFunction cms-init
-zipFunction cms-api
-zipFunction cms-sms
-zipFunction cms-openapi
-zipFunction cms-fx-openapi
+# zipFunction cms-api
+# zipFunction cms-sms
+# zipFunction cms-openapi
+# zipFunction cms-fx-openapi
 
 cd $__ABS_PATH__
 rm -rf packages/cms-init/build

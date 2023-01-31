@@ -20,12 +20,12 @@ const HeaderTitle: React.FC<{ collapsed: boolean }> = (props) => {
   })
 
   const title =
-    currentProject?.name || projects.find((_) => _._id === pid)?.name || getCmsConfig('cmsTitle')
+    currentProject?.name || projects.find((_) => _.id === pid)?.name || getCmsConfig('cmsTitle')
 
   const menu = (
     <Menu
       onClick={({ key }) => {
-        const project = projects.find((_) => _._id === key)
+        const project = projects.find((_) => _.id === key)
         ctx.setState({
           currentProject: project,
         })
@@ -35,7 +35,7 @@ const HeaderTitle: React.FC<{ collapsed: boolean }> = (props) => {
       }}
     >
       {projects.map((_) => (
-        <Menu.Item key={_._id}>{_.name}</Menu.Item>
+        <Menu.Item key={_.id}>{_.name}</Menu.Item>
       ))}
     </Menu>
   )

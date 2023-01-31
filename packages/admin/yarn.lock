@@ -2009,6 +2009,11 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
+"@cloudbase/oauth@^2.5.6-beta.1":
+  version "2.5.6-beta.1"
+  resolved "http://r.tnpm.oa.com/@cloudbase%2foauth/-/oauth-2.5.6-beta.1.tgz#270361e901f97bb3f3b81ec3d2d644359e3cf792"
+  integrity sha512-wElVAuuM1tZ7pfGx00UKsWbdawsZ8YRt1ZrLXhFsnw+w9Xv26KsnQbNM2IlFjGmKEps7hEDrDmfZpvL8VAto9A==
+
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@cnakazawa/watch/-/watch-1.0.4.tgz#f864ae85004d0fcab6f50be9141c4da368d1656a"
@@ -2618,6 +2623,13 @@
   integrity sha512-XIB2XbzHTN6ieIjfIMV9hlVcfPU26s2vafYWQcZHWXHOxiaRZYEDKEwdl129Zyg50+foYV2jCgtrqSA6qNuNSA==
   dependencies:
     defer-to-connect "^1.0.1"
+
+"@tencent/cloudbase-paas-js-sdk@^1.8.0":
+  version "1.8.0"
+  resolved "http://r.tnpm.oa.com/@tencent/cloudbase-paas-js-sdk/-/@tencent/cloudbase-paas-js-sdk-1.8.0.tgz#7c3b9e35f05f378f95f6a7a042417a968784d50d"
+  integrity sha512-liRBXbLjtJ6BPFN6fcjNGSa15OZK30YdQNP3Cil6F9PQkCQ8NN3D5GazC/pxWWKsSv50r98W86TyxZw053rBMQ==
+  dependencies:
+    "@cloudbase/oauth" "^2.5.6-beta.1"
 
 "@types/anymatch@*":
   version "1.3.1"

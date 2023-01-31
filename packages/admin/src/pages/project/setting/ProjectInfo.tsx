@@ -70,7 +70,7 @@ export default (): React.ReactElement => {
   const projectId = getProjectId()
   const [reload, setReload] = useState(0)
   const [changed, setChanged] = useState(false)
-  const { data: project, loading } = useRequest<{ data: Project }>(() => getProject(projectId), {
+  const { data: project, loading } = useRequest(() => getProject(projectId), {
     refreshDeps: [reload],
   })
 
@@ -110,7 +110,7 @@ export default (): React.ReactElement => {
         }}
       >
         <Form.Item label="项目 ID">
-          <Typography.Paragraph copyable>{project?._id}</Typography.Paragraph>
+          <Typography.Paragraph copyable>{project?.id}</Typography.Paragraph>
         </Form.Item>
         <Form.Item
           label="项目名"

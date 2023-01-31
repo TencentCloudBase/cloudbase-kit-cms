@@ -30,7 +30,7 @@ interface CurrentUser {
  * 项目
  */
 interface Project {
-  _id: string
+  id: string
 
   name: string
 

@@ -50,7 +50,11 @@ export default {
         searchFields: fields,
       }
     },
-    async getContentSchemas(projectId: string, state: any, ctx: IActionCtx) {
+    async getContentSchemas(
+      projectId: string,
+      state: any,
+      ctx: IActionCtx
+    ): Promise<{ schemas: Schema[]; loading: boolean }> {
       ctx.setState({
         loading: true,
       })

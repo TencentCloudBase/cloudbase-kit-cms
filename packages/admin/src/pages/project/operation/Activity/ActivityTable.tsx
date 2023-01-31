@@ -203,7 +203,7 @@ export const ActivityTable: React.FC<{
         icon={<PlusOutlined />}
         disabled={!currentSchema.fields?.length}
         onClick={() => {
-          if (!currentSchema?._id) {
+          if (!currentSchema?.id) {
             message.error('请选择需要创建的内容类型！')
             return
           }

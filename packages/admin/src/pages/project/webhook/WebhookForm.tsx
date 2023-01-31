@@ -73,7 +73,7 @@ export const WebhookForm: React.FC<{
   const initialWebhook = {
     ...selectedWebhook,
     type: selectedWebhook?.type || 'http',
-    collections: selectedWebhook?.collections.map((_) => (_?._id ? _._id : _)),
+    collections: selectedWebhook?.collections.map((_) => (_?.id ? _.id : _)),
   }
 
   return (
@@ -88,7 +88,7 @@ export const WebhookForm: React.FC<{
           if (coll === '*') {
             return '*'
           } else {
-            return schemas.find((schema) => coll === schema._id)
+            return schemas.find((schema) => coll === schema.id)
           }
         })
         run(v)
