@@ -75,7 +75,14 @@ const Login: React.FC<{}> = () => {
     let loginSuccess = false
     try {
       // 用户名密码登录
-      await loginWithPassword(username.trim(), password.trim())
+      const logRsp = await loginWithPassword(username.trim(), password.trim())
+      if (logRsp?.error) {
+        throw new Error({
+          message: JSON.stringify(
+            logRsp?.error_description || logRsp?.error || '登录失败，请重试！'
+          ),
+        })
+      }
       message.success('登录成功')
       loginSuccess = true
       replaceGoto()

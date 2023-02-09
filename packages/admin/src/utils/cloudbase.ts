@@ -211,7 +211,7 @@ export async function tcbRequest<T = any>(
   url: string,
   options: RequestOptionsInit & { skipErrorHandler?: boolean } = {}
 ): Promise<T> {
-  if (IS_KIT_MODE && !/\/auth\/v1\//.test(url) && (isDevEnv() || SERVER_MODE)) {
+  if (IS_KIT_MODE && !/\/auth\/v1\//.test(url)) {
     const { envId, region, kitId } = window.TcbCmsConfig || {}
     const reqParam = reqParamFormat(url, { ...(options || {}) })
     let result: any
@@ -268,31 +268,7 @@ export async function tcbRequest<T = any>(
     // return request<T>(url, options)
   }
 
-  const { method, params, data } = options
-  const app = await getCloudBaseApp()
-
-  const functionName = `${RESOURCE_PREFIX}-service`
-
-  const res = await app.callFunction({
-    parse: true,
-    name: functionName,
-    data: {
-      body: data,
-      httpMethod: method,
-      queryStringParameters: params,
-      path: `${defaultSettings.globalPrefix}${url}`,
-    },
-  })
-
-  if (res.result?.statusCode === 500) {
-    notification.error({
-      message: '请求错误',
-      description: `服务异常：${status}: ${url}`,
-    })
-    // throw new Error('服务异常')
-  }
-
-  return parseIntegrationRes(res.result)
+  return Promise.reject(undefined)
 }
 
 /**

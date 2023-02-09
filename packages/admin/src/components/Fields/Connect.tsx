@@ -127,7 +127,12 @@ export const IConnectEditor: React.FC<{
     }
   )
 
-  const connectIds = transformConnectValues(value, connectMany)
+  const tempV =
+    typeof value === 'object' && !!value?.['id']
+      ? { ...value, _id: value?.['_id'] || value?.['id'] }
+      : value // 新版本_id字段修改为id，这里兼容下
+  const connectIds = transformConnectValues(tempV, connectMany)
+  // const connectIds = transformConnectValues(value, connectMany)
 
   return (
     <Select<ISelectValue>
