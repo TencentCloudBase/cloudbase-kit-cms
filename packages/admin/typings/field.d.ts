@@ -171,4 +171,7 @@ interface Schema {
   creatTime: number
 
   updateTime: number
+
+  /** 是否开启api访问（旧cms中该字段通过项目设置参数计算得出） */
+  enableApiAccess?: boolean
 }

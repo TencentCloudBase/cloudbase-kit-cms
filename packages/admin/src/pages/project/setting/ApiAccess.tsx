@@ -21,6 +21,8 @@ import { useConcent } from 'concent'
 import { ContentCtx, GlobalCtx } from 'typings/store'
 import { copyToClipboard, getProjectId } from '@/utils'
 import { CopyOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
+import { IS_KIT_MODE } from '@/kitConstants'
+import { updateSchemaAndCollection } from '@/services/schema'
 
 const { Text } = Typography
 
@@ -167,9 +169,8 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
 
   const projectId = getProjectId()
   // 使用 content module 的数据，获取 layout 时，必然被加载、刷新
-  const {
-    state: { schemas },
-  } = useConcent<{}, ContentCtx>('content')
+  const contentCtr = useConcent<{}, ContentCtx>('content')
+  const schemas = contentCtr.state.schemas
 
   const [readableCollections, setReadableCollections] = useState<string[]>([])
   const [modifiableCollections, setModifiableCollections] = useState<string[]>([])
@@ -178,23 +179,36 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
   // 保存修改
   const { run: changePermission, loading } = useRequest(
     async () => {
-      await updateProject(projectId, {
-        readableCollections,
-        modifiableCollections,
-        deletableCollections,
-      })
+      // await updateProject(projectId, {
+      //   readableCollections,
+      //   modifiableCollections,
+      //   deletableCollections,
+      // })
+      await Promise.all(
+        schemas
+          ?.filter((item) => item.enableApiAccess !== readableCollections?.includes(item.id))
+          .map((item) =>
+            updateSchemaAndCollection(projectId, item.id, {
+              enableApiAccess: readableCollections?.includes(item.id),
+            })
+          )
+      )
+      await contentCtr.mr.getContentSchemas(projectId)
       onReload()
     },
     {
       manual: true,
-      onSuccess: () => message.success('保存成功'),
+      onSuccess: () => message.success('保存成功，预计一分钟后生效'),
       onError: (e) => message.error(`保存失败: ${e.message}`),
     }
   )
 
   useEffect(() => {
     if (project?.id) {
-      setReadableCollections(project.readableCollections || [])
+      // setReadableCollections(project.readableCollections || [])
+      setReadableCollections(
+        schemas?.filter((item) => item?.enableApiAccess)?.map((item) => item.id) || []
+      )
       setModifiableCollections(project.modifiableCollections || [])
       setDeletableCollections(project.deletableCollections || [])
     }
@@ -215,53 +229,63 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
           <Space>
             <span>{schema.displayName}</span>
             <Checkbox
-              checked={readableCollections?.includes(schema.collectionName)}
+              checked={readableCollections?.includes(schema.id)}
               onChange={(e) => {
                 setReadableCollections(
-                  modifyArray(readableCollections, schema.collectionName, e.target.checked)
+                  modifyArray(readableCollections, schema.id, e.target.checked)
                 )
               }}
             >
               允许访问
             </Checkbox>
-            <Checkbox
-              checked={modifiableCollections?.includes(schema.collectionName)}
-              onChange={(e) =>
-                setModifiableCollections(
-                  modifyArray(modifiableCollections, schema.collectionName, e.target.checked)
-                )
-              }
-            >
-              允许修改
-            </Checkbox>
-            <Checkbox
-              checked={deletableCollections?.includes(schema.collectionName)}
-              onChange={(e) =>
-                setDeletableCollections(
-                  modifyArray(deletableCollections, schema.collectionName, e.target.checked)
-                )
-              }
-            >
-              允许删除
-            </Checkbox>
-            {initialValues.path && (
-              <Button
-                type="link"
-                onClick={() => {
-                  const path = setting.apiAccessPath || initialValues.path
-
-                  if (!path) {
-                    message.error('未设置 API 访问路径')
-                  } else {
-                    copyToClipboard(`https://${accessDomain}${path}/v1.0/${schema.collectionName}`)
-                    message.success('复制成功')
-                  }
-                }}
+            {false && (
+              <Checkbox
+                checked={modifiableCollections?.includes(schema.collectionName)}
+                onChange={(e) =>
+                  setModifiableCollections(
+                    modifyArray(modifiableCollections, schema.collectionName, e.target.checked)
+                  )
+                }
               >
-                复制访问链接
-                <CopyOutlined className="ml-2" />
-              </Button>
+                允许修改
+              </Checkbox>
             )}
+            {false && (
+              <Checkbox
+                checked={deletableCollections?.includes(schema.collectionName)}
+                onChange={(e) =>
+                  setDeletableCollections(
+                    modifyArray(deletableCollections, schema.collectionName, e.target.checked)
+                  )
+                }
+              >
+                允许删除
+              </Checkbox>
+            )}
+            {
+              /* initialValues.path */ schema?.enableApiAccess && (
+                <Button
+                  type="link"
+                  onClick={() => {
+                    const path = setting.apiAccessPath || initialValues.path
+
+                    // eslint-disable-next-line no-constant-condition
+                    if (!path && false) {
+                      message.error('未设置 API 访问路径')
+                    } else {
+                      // copyToClipboard(`https://${accessDomain}${path}/v1.0/${schema.collectionName}`)
+                      copyToClipboard(
+                        `https://${window.TcbCmsConfig.envId}.${window.TcbCmsConfig.region}.kits.tcloudbase.com/cms/${window.TcbCmsConfig.kitId}/v1/open-api/projects/${projectId}/collections/${schema.id}/contents?limit=10&offset=0`
+                      )
+                      message.success('复制成功')
+                    }
+                  }}
+                >
+                  复制访问链接
+                  <CopyOutlined className="ml-2" />
+                </Button>
+              )
+            }
           </Space>
         </div>
       ))}
@@ -286,6 +310,10 @@ export default (): React.ReactElement => {
   const { data: project, loading } = useRequest(() => getProject(projectId), {
     refreshDeps: [reloadFlag],
   })
+
+  if (IS_KIT_MODE && !!project) {
+    project.enableApiAccess = true // 无头套件特殊处理下
+  }
 
   /**
    * @deprecated
@@ -337,7 +365,7 @@ export default (): React.ReactElement => {
 
   return (
     <>
-      {project?.enableApiAccess && (
+      {project?.enableApiAccess && false && (
         <>
           <Typography.Title level={3}>API 访问</Typography.Title>
           <Divider />

@@ -1,6 +1,6 @@
 import { useConcent } from 'concent'
 import React, { useMemo, useState } from 'react'
-import { FieldTypes } from '@/common'
+import { FieldTypes, SYSTEM_FIELDS } from '@/common'
 import { Card, Space, Typography, Tooltip, Switch, Tag, Spin } from 'antd'
 import { ExclamationCircleTwoTone, QuestionCircleTwoTone } from '@ant-design/icons'
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
@@ -61,8 +61,9 @@ export const SchemaFieldListRender: React.FC<{
     // 更新顺序
     schema.fields = resortedFields
     setSortLoading(true)
+    const sysNames: string[] = SYSTEM_FIELDS.map((item) => item?.name || '')
     await updateSchemaFiled(projectId, schema?.id, {
-      fields: resortedFields,
+      fields: resortedFields?.filter((item) => !sysNames?.includes(item?.name)),
     })
 
     // 重新加载数据
