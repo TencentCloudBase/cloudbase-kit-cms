@@ -185,7 +185,7 @@ const getConnectFieldDisplayText = (doc: any, schemas: Schema[], field: SchemaFi
   const connectedSchema = schemas.find((_: Schema) => _.id === connectResource)
 
   // 关联字段的信息
-  const connectedFieldInfo = connectedSchema?.fields.find((_) => _.name === connectField)
+  const connectedFieldInfo = connectedSchema?.fields?.find((_) => _.name === connectField)
 
   // 关联的字段，又是一个关联类型，则展示关联字段关联的字段
   // A -> B -> C

@@ -269,7 +269,12 @@ export const SchemaFieldEditorModal: React.FC<{
           name="displayName"
           rules={[{ required: true, message: '请输入展示名称！' }]}
         >
-          <Input placeholder="展示名称，如文章标题" disabled={selectedField.isSystem} />
+          <Input
+            showCount
+            maxLength={15}
+            placeholder="展示名称，如文章标题"
+            disabled={selectedField.isSystem}
+          />
         </Form.Item>
 
         <Form.Item
@@ -283,7 +288,12 @@ export const SchemaFieldEditorModal: React.FC<{
             },
           ]}
         >
-          <Input placeholder="数据库字段名，如 title" disabled={selectedField.isSystem} />
+          <Input
+            showCount
+            maxLength={15}
+            placeholder="数据库字段名，如 title"
+            disabled={selectedField.isSystem}
+          />
         </Form.Item>
 
         {/^_/.test(formValue?.name) && !selectedField.isSystem && (
@@ -302,7 +312,7 @@ export const SchemaFieldEditorModal: React.FC<{
         )}
 
         <Form.Item label="描述" name="description">
-          <TextArea placeholder="字段描述，如博客文章标题" />
+          <TextArea showCount maxLength={30} placeholder="字段描述，如博客文章标题" />
         </Form.Item>
 
         {hasDefaultValue(selectedField) ? null : (

@@ -20,6 +20,12 @@ interface IntegrationRes {
   isBase64Encoded: true | false
 }
 
+/** 后台接口错误处理函数（当前ts文件无法导入显示节点，所以从外部注入下） */
+let apiErrorHandler: (result?: any, url?: string) => any = () => ''
+export function setApiErrorHandler(func: typeof apiErrorHandler) {
+  apiErrorHandler = func
+}
+
 let app: any
 let auth: CloudbaseOAuth
 
@@ -228,10 +234,11 @@ export async function tcbRequest<T = any>(
 
       // 错误处理
       if (result?.code !== 'NORMAL') {
-        notification.error({
-          message: '请求错误',
-          description: `服务异常：${result?.status || '--'}: ${url}`,
-        })
+        apiErrorHandler(result, url)
+        // notification.error({
+        //   message: '请求错误',
+        //   description: `服务异常：${result?.status || '--'}: ${url}`,
+        // })
       }
       return result.result
     } else {
@@ -258,10 +265,11 @@ export async function tcbRequest<T = any>(
 
       // 错误处理
       if (data?.code !== 'NORMAL') {
-        notification.error({
-          message: '请求错误',
-          description: `服务异常：${result.status}: ${url}`,
-        })
+        apiErrorHandler(result, url)
+        // notification.error({
+        //   message: '请求错误',
+        //   description: `服务异常：${result.status}: ${url}`,
+        // })
       }
       return data.result
     }

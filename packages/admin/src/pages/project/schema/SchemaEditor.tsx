@@ -156,7 +156,7 @@ const SchemaEditor: React.FC = () => {
           name="displayName"
           rules={[{ required: true, message: '请输入展示名称！' }]}
         >
-          <Input placeholder="展示名称，如文章" />
+          <Input showCount maxLength={15} placeholder="展示名称，如文章" />
         </Form.Item>
 
         {!IS_KIT_MODE && (
@@ -185,7 +185,11 @@ const SchemaEditor: React.FC = () => {
         )}
 
         <Form.Item label="描述信息" name="description">
-          <TextArea placeholder="描述信息，会展示在对应内容的管理页面顶部，可用于内容提示，支持 HTML 片段" />
+          <TextArea
+            showCount
+            maxLength={30}
+            placeholder="描述信息，会展示在对应内容的管理页面顶部，可用于内容提示，支持 HTML 片段"
+          />
         </Form.Item>
 
         {!IS_KIT_MODE && schemaEditAction === 'create' && (

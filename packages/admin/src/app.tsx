@@ -1,16 +1,26 @@
 import React from 'react'
 import { run } from 'concent'
-import { notification, message, Typography } from 'antd'
+import { notification, message, Typography, Button } from 'antd'
 import { Context, ResponseError } from 'umi-request'
 import { history, RequestConfig } from 'umi'
 import { codeMessage } from '@/constants'
 import { BasicLayoutProps, Settings as LayoutSettings, MenuDataItem } from '@ant-design/pro-layout'
 import { getCurrentUser } from './services/apis'
 import defaultSettings from '../config/defaultSettings'
-import { isDevEnv, getLoginState, getHttpAccessPath, getAuthHeaderAsync } from './utils'
+import {
+  isDevEnv,
+  getLoginState,
+  getHttpAccessPath,
+  getAuthHeaderAsync,
+  setApiErrorHandler,
+  copyToClipboard,
+} from './utils'
 import * as models from './models'
 import { getSetting } from './services/global'
 import { IS_KIT_MODE } from './kitConstants'
+
+/** 无头cms没有user概念，这里mock一个 */
+const MOCK_USER_ID = '_mock_user_id'
 
 run(models)
 
@@ -48,7 +58,7 @@ export async function getInitialState(): Promise<{
   // 获取用户信息
   try {
     currentUser = IS_KIT_MODE
-      ? { _id: '_mock_id', isAdmin: true, username: '' }
+      ? { _id: MOCK_USER_ID, isAdmin: true, username: '' }
       : await getCurrentUser()
   } catch (e) {
     console.log(e)
@@ -241,3 +251,16 @@ export const qiankun = async () => {
     }
   }
 }
+
+setApiErrorHandler((result?: any, url?: string) => {
+  const resultJson = typeof result === 'string' ? result : JSON.stringify(result)
+  notification.error({
+    message: '请求错误',
+    description: `服务异常：${result?.status || '--'}: ${url}`,
+    btn: (
+      <Button type="link" onClick={() => result && copyToClipboard(resultJson)}>
+        复制详情
+      </Button>
+    ),
+  })
+})
