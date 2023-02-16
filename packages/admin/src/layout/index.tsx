@@ -16,7 +16,7 @@ import {
 } from '@ant-design/icons'
 import { useConcent } from 'concent'
 import { ContentCtx, GlobalCtx } from 'typings/store'
-import { getProjectId } from '@/utils'
+import { getProjectName } from '@/utils'
 import defaultSettings from '../../config/defaultSettings'
 
 // 设置图标颜色
@@ -108,7 +108,7 @@ const layoutProps: BasicLayoutProps = {
  */
 const Layout: React.FC<any> = (props) => {
   // 当前的项目 ID
-  const projectId = getProjectId()
+  const projectName = getProjectName()
 
   const access = useAccess()
   const { children, location } = props
@@ -147,21 +147,21 @@ const Layout: React.FC<any> = (props) => {
 
   // 加载 schema 集合
   useEffect(() => {
-    // projectId 无效时，重定向到首页
-    const projectId = getProjectId()
+    // projectName 无效时，重定向到首页
+    const projectName = getProjectName()
 
-    if (projectId === 'project' || !projectId) {
+    if (projectName === 'project' || !projectName) {
       history.push('/home')
       return
     }
 
-    ctx.mr.getContentSchemas(projectId)
-  }, [projectId])
+    ctx.mr.getContentSchemas(projectName)
+  }, [projectName])
 
   // 内容集合菜单
   const contentChildMenus = schemas?.map((schema: Schema) => ({
     name: schema.displayName,
-    path: `/project/content/${schema.id}`,
+    path: `/project/content/${schema.collectionName}`,
   }))
 
   // HACK: 强制菜单重新渲染，修复菜单栏在获取数据后不自动渲染的问题
@@ -169,7 +169,7 @@ const Layout: React.FC<any> = (props) => {
     setRefresh({
       n: refresh.n + 1,
     })
-  }, [projectId, loading, schemas, setting])
+  }, [projectName, loading, schemas, setting])
 
   return (
     <ProLayout
@@ -184,7 +184,7 @@ const Layout: React.FC<any> = (props) => {
         // 添加自定义菜单
         const { customMenus } = setting
         if (customMenus?.length) {
-          const projectId = getProjectId()
+          const projectName = getProjectName()
 
           // 循环判断菜单是否存在，不存在则插入菜单
           // 保持菜单的原有顺序插入
@@ -192,7 +192,7 @@ const Layout: React.FC<any> = (props) => {
 
           customMenus
             .filter((menu) => {
-              return menu.applyProjects?.length ? menu.applyProjects.includes(projectId) : true
+              return menu.applyProjects?.length ? menu.applyProjects.includes(projectName) : true
             })
             .forEach((menu, index) => {
               const isCustomMenusInsert = systemMenuData.find((_) => _?.key === menu.id)
@@ -206,7 +206,7 @@ const Layout: React.FC<any> = (props) => {
         return systemMenuData.filter((_) => access[_.authority as string])
       }}
       menuItemRender={(menuItemProps, defaultDom) => {
-        const projectId = getProjectId()
+        const projectName = getProjectName()
 
         if (menuItemProps.children) {
           return defaultDom
@@ -223,9 +223,9 @@ const Layout: React.FC<any> = (props) => {
 
         // 跳转路径
         if (menuItemProps.path) {
-          const menuPath = menuItemProps.path?.includes('?pid')
+          const menuPath = menuItemProps.path?.includes('?pname')
             ? menuItemProps.path
-            : menuItemProps.path + `?pid=${projectId}`
+            : menuItemProps.path + `?pname=${projectName}`
 
           return (
             <Link
@@ -256,7 +256,7 @@ const Layout: React.FC<any> = (props) => {
  * 遍历菜单配置树，生成菜单树
  */
 const mapCustomMenuTree = (node: CustomMenuItem): any => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
 
   const menuData: any = {
     key: node.id,
@@ -271,7 +271,7 @@ const mapCustomMenuTree = (node: CustomMenuItem): any => {
   if (node.children?.length) {
     menuData.children = node.children
       .filter((menu) =>
-        menu.applyProjects?.length ? menu.applyProjects.includes(projectId) : true
+        menu.applyProjects?.length ? menu.applyProjects.includes(projectName) : true
       )
       .map((_) => mapCustomMenuTree(_))
   }

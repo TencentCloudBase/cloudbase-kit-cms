@@ -20,7 +20,7 @@ import { history, useRequest } from 'umi'
 import { useConcent } from 'concent'
 import { GlobalCtx } from 'typings/store'
 import { enableNonLogin, enableOperationService } from '@/services/operation'
-import { callWxOpenAPI, getProjectId, redirectTo, sleep } from '@/utils'
+import { callWxOpenAPI, getProjectName, redirectTo, sleep } from '@/utils'
 
 const { Step } = Steps
 const { Link } = Typography
@@ -87,7 +87,7 @@ const OperationPageContainer: React.FC = ({ children }) => (
  * 开通营销工具
  */
 const OperationEnable: React.FC<{ setting: GlobalSetting }> = ({ setting }) => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
 
   // 开通营销工具
   const { run: enableService } = useRequest(
@@ -117,7 +117,7 @@ const OperationEnable: React.FC<{ setting: GlobalSetting }> = ({ setting }) => {
       }
 
       // 开启未登录
-      await enableNonLogin(projectId)
+      await enableNonLogin(projectName)
 
       // 存储 appId
       if (setting?.miniappID || window.TcbCmsConfig.mpAppID) {
@@ -137,9 +137,9 @@ const OperationEnable: React.FC<{ setting: GlobalSetting }> = ({ setting }) => {
         }
 
         // 开通营销工具
-        await enableOperationService(projectId, appInfo)
+        await enableOperationService(projectName, appInfo)
       } else {
-        await enableOperationService(projectId, data)
+        await enableOperationService(projectName, data)
       }
     },
     {

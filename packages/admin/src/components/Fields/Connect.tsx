@@ -9,7 +9,7 @@ import {
   formatServiceContent,
   getAllContents,
 } from '@/services/content'
-import { calculateFieldWidth, getProjectId, getValueOrSlug } from '@/utils'
+import { calculateFieldWidth, getProjectName, getValueOrSlug } from '@/utils'
 import { ContentCtx } from 'typings/store'
 import { IS_KIT_MODE } from '@/kitConstants'
 
@@ -42,7 +42,7 @@ export const IConnectRender: React.FC<{
 
   if (!value || typeof value === 'string' || typeof value?.[0] === 'string') return <span>-</span>
 
-  const formatValue: IConnectValue = IS_KIT_MODE ? formatServiceContent([value])[0] : value
+  const formatValue: IConnectValue = formatServiceContent([value])[0]
 
   if (!connectMany) {
     return (
@@ -54,9 +54,9 @@ export const IConnectRender: React.FC<{
 
   return (
     <Paragraph style={{ width }}>
-      {value
-        .filter((_: any) => _)
-        .map((record: any, index: number) => (
+      {formatServiceContent(value as any)
+        ?.filter((_: any) => _)
+        ?.map((record: any, index: number) => (
           <Tag key={index}>{getConnectFieldDisplayText(record, schemas, field)}</Tag>
         ))}
     </Paragraph>
@@ -72,7 +72,7 @@ export const IConnectEditor: React.FC<{
   onChange?: (v: string | string[]) => void
 }> = (props) => {
   const { value = [], onChange, field } = props
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const ctx = useConcent<{}, ContentCtx>('content')
   const { connectField, connectResource, connectMany } = field
   const { schemas } = ctx.state
@@ -85,12 +85,12 @@ export const IConnectEditor: React.FC<{
   useRequest(
     async () => {
       setLoading(true)
-      let connectSchema = schemas.find((_: Schema) => _.id === connectResource)
+      let connectSchema = schemas.find((_: Schema) => _.collectionName === connectResource)
 
       console.log('关联', connectSchema)
       // 后台获取 Schema
       if (!connectSchema) {
-        const { data } = await getContentSchema(projectId, connectResource)
+        const { data } = await getContentSchema(projectName, connectResource)
         connectSchema = data
       }
 
@@ -105,10 +105,10 @@ export const IConnectEditor: React.FC<{
         }
       }
 
-      // const { data } = await getContents(projectId, IS_KIT_MODE ? connectResource : connectSchema.collectionName, fetchOptions)
+      // const { data } = await getContents(projectName, IS_KIT_MODE ? connectResource : connectSchema.collectionOldName, fetchOptions)
       const { data } = await getAllContents(
-        projectId,
-        IS_KIT_MODE ? connectResource : connectSchema.collectionName,
+        projectName,
+        IS_KIT_MODE ? connectResource : connectSchema.collectionOldName,
         fetchOptions
       )
 
@@ -127,11 +127,16 @@ export const IConnectEditor: React.FC<{
     }
   )
 
-  const tempV =
-    typeof value === 'object' && !!value?.['id']
-      ? { ...value, _id: value?.['_id'] || value?.['id'] }
-      : value // 新版本_id字段修改为id，这里兼容下
-  const connectIds = transformConnectValues(tempV, connectMany)
+  // 新版本_id字段修改为id，这里兼容下
+  const valueFomat = (oriV: any) => {
+    return typeof oriV === 'object' && !!oriV?.['id']
+      ? { ...oriV, _id: oriV?.['_id'] || oriV?.['id'] }
+      : oriV
+  }
+  const connectIds = transformConnectValues(
+    connectMany ? (value as IConnectMultiValue).map((v) => valueFomat(v)) : valueFomat(value),
+    connectMany
+  )
   // const connectIds = transformConnectValues(value, connectMany)
 
   return (
@@ -182,7 +187,7 @@ const getConnectFieldDisplayText = (doc: any, schemas: Schema[], field: SchemaFi
   const { connectField, connectResource } = field
 
   // 当前关联字段 => 关联 schema 的信息
-  const connectedSchema = schemas.find((_: Schema) => _.id === connectResource)
+  const connectedSchema = schemas.find((_: Schema) => _.collectionName === connectResource)
 
   // 关联字段的信息
   const connectedFieldInfo = connectedSchema?.fields?.find((_) => _.name === connectField)
@@ -204,7 +209,7 @@ const getConnectField = (schemas: Schema[], field: SchemaField) => {
   const { connectField, connectResource } = field
 
   // 当前关联字段 => 关联 schema 的信息
-  const connectedSchema = schemas.find((_) => _.id === connectResource)
+  const connectedSchema = schemas.find((_) => _.collectionName === connectResource)
 
   // 关联字段的信息
   let connectedFieldInfo = connectedSchema?.fields.find((_) => _.name === connectField)
@@ -212,7 +217,9 @@ const getConnectField = (schemas: Schema[], field: SchemaField) => {
   // 关联的字段，又是一个关联类型，则展示关联字段关联的字段
   // A -> B -> C
   if (connectedFieldInfo?.connectResource) {
-    const nestConnectSchema = schemas.find((_) => _.id === connectedFieldInfo?.connectResource)
+    const nestConnectSchema = schemas.find(
+      (_) => _.collectionName === connectedFieldInfo?.connectResource
+    )
     connectedFieldInfo = nestConnectSchema?.fields.find(
       (_) => _.name === connectedFieldInfo?.connectField
     )

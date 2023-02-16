@@ -215,7 +215,7 @@ export function getFieldFormItem(
               >
                 <Select style={{ width: 200 }}>
                   {schemas?.map((schema: Schema) => (
-                    <Option value={schema.id} key={schema.id}>
+                    <Option value={schema.collectionName} key={schema.collectionName}>
                       {schema.displayName}
                     </Option>
                   ))}

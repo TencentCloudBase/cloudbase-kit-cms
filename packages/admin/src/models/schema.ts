@@ -60,21 +60,21 @@ export default {
         schemaEditVisible: true,
       }
     },
-    async getSchemas(projectId: string, state: SchemaState, ctx: IActionCtx) {
+    async getSchemas(projectName: string, state: SchemaState, ctx: IActionCtx) {
       ctx.setState({
         loading: true,
       })
 
       try {
-        const { data } = await getSchemas(projectId)
+        const { data } = await getSchemas(projectName)
         const { currentSchema } = state
         if (!currentSchema) return
 
         // 重新获取时，如果存在选择的 schema，则也同时更新
-        if (currentSchema?.id) {
-          let schema = data.find((_: any) => _._id === currentSchema.id)
+        if (currentSchema?.collectionName) {
+          let schema = data.find((_) => _.collectionName === currentSchema.collectionName)
 
-          if (!schema?.id) {
+          if (!schema?.collectionName) {
             schema = data[0]
           }
 
@@ -87,7 +87,7 @@ export default {
         }
 
         return {
-          currentSchema: data?.[0]?.id ? data[0] : {},
+          currentSchema: data?.[0]?.collectionName ? data[0] : {},
           schemas: data,
           loading: false,
         }

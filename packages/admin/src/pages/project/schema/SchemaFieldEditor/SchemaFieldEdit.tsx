@@ -25,7 +25,7 @@ import {
   formatStoreTimeByType,
   getMissingSystemFields,
   getSchemaCustomFields,
-  getProjectId,
+  getProjectName,
 } from '@/utils'
 import { getFieldDefaultValueInput, getFieldFormItem } from './Field'
 import { IS_KIT_MODE } from '@/kitConstants'
@@ -46,7 +46,7 @@ export const SchemaFieldEditorModal: React.FC<{
   visible: boolean
   onClose: () => void
 }> = ({ visible, onClose }) => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const ctx = useConcent<{}, SchmeaCtx>('schema')
   const contentCtx = useConcent<{}, ContentCtx>('content')
   const [formValue, setFormValue] = useState<any>()
@@ -107,7 +107,7 @@ export const SchemaFieldEditorModal: React.FC<{
         }
 
         // 创建 schema field
-        await createSchemaFiled(projectId, currentSchema?.id || '', {
+        await createSchemaFiled(projectName, currentSchema?.collectionName || '', {
           ...field,
           order: fields.length,
           type: selectedField.type,
@@ -133,7 +133,7 @@ export const SchemaFieldEditorModal: React.FC<{
 
         // 更新 schema fields
         if (IS_KIT_MODE) {
-          await updateSchemaFiled(projectId, currentSchema?.id || '', {
+          await updateSchemaFiled(projectName, currentSchema?.collectionName || '', {
             fields: [fieldData],
           })
         }
@@ -141,14 +141,14 @@ export const SchemaFieldEditorModal: React.FC<{
 
       // 更新 schema fields
       if (!IS_KIT_MODE) {
-        await updateSchemaFiled(projectId, currentSchema?.id || '', {
+        await updateSchemaFiled(projectName, currentSchema?.collectionName || '', {
           fields,
         })
       }
 
       // 重新加载数据
-      ctx.mr.getSchemas(projectId)
-      contentCtx.mr.getContentSchemas(projectId)
+      ctx.mr.getSchemas(projectName)
+      contentCtx.mr.getContentSchemas(projectName)
       onClose()
     },
     {
@@ -178,7 +178,7 @@ export const SchemaFieldEditorModal: React.FC<{
   // 编辑字段
   useEffect(() => {
     if (selectedField?.connectResource) {
-      const schema = schemas.find((_: Schema) => _.id === selectedField.connectResource)
+      const schema = schemas.find((_: Schema) => _.collectionName === selectedField.connectResource)
       setConnectSchema(schema)
     }
 
@@ -189,12 +189,12 @@ export const SchemaFieldEditorModal: React.FC<{
 
   /** 无头套件模式下，拉接口获取fields */
   useEffect(() => {
-    if (IS_KIT_MODE && !!connectSchema?.id && !connectSchema?.fields) {
-      const projectId = getProjectId()
-      const curId = connectSchema.id
-      getSchemaFileds(projectId, connectSchema.id).then((res) => {
+    if (IS_KIT_MODE && !!connectSchema?.collectionName && !connectSchema?.fields) {
+      const projectName = getProjectName()
+      const curId = connectSchema.collectionName
+      getSchemaFileds(projectName, connectSchema.collectionName).then((res) => {
         const fields = res.data.map((item) => ({ ...item?.['schema'], id: item.id }))
-        if (curId === connectSchema.id) {
+        if (curId === connectSchema.collectionName) {
           setConnectSchema({ ...connectSchema, fields })
         }
       })
@@ -231,16 +231,19 @@ export const SchemaFieldEditorModal: React.FC<{
       onCancel={() => onClose()}
     >
       {fieldAction === 'create' && selectedField?.description && (
-        <Alert type="info" message={selectedField?.description} />
+        <>
+          <Alert type="info" message={selectedField?.description} />
+          <br />
+        </>
       )}
-      <br />
+
       <Form
         layout="vertical"
         labelCol={{ span: 6 }}
         initialValues={InitailValues}
         onValuesChange={(changed, v) => {
           if (changed.connectResource) {
-            const schema = schemas.find((_: Schema) => _.id === v.connectResource)
+            const schema = schemas.find((_: Schema) => _.collectionName === v.connectResource)
             setConnectSchema(schema)
           }
 
@@ -265,26 +268,13 @@ export const SchemaFieldEditorModal: React.FC<{
         }}
       >
         <Form.Item
-          label="展示名称"
-          name="displayName"
-          rules={[{ required: true, message: '请输入展示名称！' }]}
-        >
-          <Input
-            showCount
-            maxLength={15}
-            placeholder="展示名称，如文章标题"
-            disabled={selectedField.isSystem}
-          />
-        </Form.Item>
-
-        <Form.Item
           label="数据库字段名"
           name="name"
           rules={[
             { required: true, message: '请输入数据库名称！' },
             {
-              message: '字段名只能使用英文字母、数字、-、_ 等符号',
-              pattern: /^[a-z0-9A-Z_-]+$/,
+              message: '字段名只能使用英文字母、数字、- 等符号',
+              pattern: /^[a-z0-9A-Z-]+$/,
             },
           ]}
         >
@@ -292,7 +282,7 @@ export const SchemaFieldEditorModal: React.FC<{
             showCount
             maxLength={15}
             placeholder="数据库字段名，如 title"
-            disabled={selectedField.isSystem}
+            disabled={selectedField.isSystem || fieldAction === 'edit'}
           />
         </Form.Item>
 
@@ -310,6 +300,19 @@ export const SchemaFieldEditorModal: React.FC<{
             message={`${formValue.name} 是系统保留字段，请使用其他名称`}
           />
         )}
+
+        <Form.Item
+          label="展示名称"
+          name="displayName"
+          rules={[{ required: true, message: '请输入展示名称！' }]}
+        >
+          <Input
+            showCount
+            maxLength={15}
+            placeholder="展示名称，如文章标题"
+            disabled={selectedField.isSystem}
+          />
+        </Form.Item>
 
         <Form.Item label="描述" name="description">
           <TextArea showCount maxLength={30} placeholder="字段描述，如博客文章标题" />

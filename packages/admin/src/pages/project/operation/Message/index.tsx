@@ -8,7 +8,7 @@ import { PageContainer } from '@ant-design/pro-layout'
 import React, { useRef, useCallback, useMemo } from 'react'
 import ProTable, { ActionType, ProColumns } from '@ant-design/pro-table'
 import { getContents } from '@/services/content'
-import { getProjectId, redirectTo } from '@/utils'
+import { getProjectName, redirectTo } from '@/utils'
 import { Button, Modal, message, Space, Menu, List, Typography, Popover } from 'antd'
 import { PlusOutlined, QuestionCircleTwoTone } from '@ant-design/icons'
 import { formatSearchParams } from '../../content/tool'
@@ -46,7 +46,7 @@ export const ContentTable: React.FC<{
   currentSchema: Schema
 }> = (props) => {
   const { currentSchema } = props
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const [{ visible, sendStatusList }, setState] = useSetState<any>({
     visible: false,
     sendStatusList: [],
@@ -67,19 +67,19 @@ export const ContentTable: React.FC<{
       filter: any
     ) => {
       const { pageSize, current } = params
-      const resource = currentSchema.collectionName
+      const resource = currentSchema.collectionOldName
 
       const fuzzyFilter = formatSearchParams(searchParams, currentSchema)
 
       try {
-        const { data = [], total } = await getContents(projectId, resource, {
+        const { data = [], total } = await getContents(projectName, resource, {
           sort: {
             ...sort,
             createTime: 1,
           },
           filter: {
             ...filter,
-            projectId,
+            projectName,
           },
           pageSize,
           fuzzyFilter,

@@ -21,7 +21,7 @@ import {
   Alert,
 } from 'antd'
 import { useSetState } from 'react-use'
-import { callWxOpenAPI, downloadAndSaveFile, getProjectId, redirectTo, uploadFile } from '@/utils'
+import { callWxOpenAPI, downloadAndSaveFile, getProjectName, redirectTo, uploadFile } from '@/utils'
 import { createBatchTask } from '@/services/operation'
 import { useConcent } from 'concent'
 import { GlobalCtx } from 'typings/store'
@@ -74,7 +74,7 @@ const MessageTask: React.FC = () => {
   const qrCodeRef = useRef<any>()
   const modalRef = useRef<any>(null)
   const [form] = Form.useForm()
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const globalCtx = useConcent<{}, GlobalCtx>('global')
   const { setting } = globalCtx.state || {}
   const [shortname, setShortname] = useState('')
@@ -123,7 +123,7 @@ const MessageTask: React.FC = () => {
   // 创建发送任务
   const { run, loading } = useRequest(
     async (payload: any) => {
-      const { taskId } = await createBatchTask(projectId, payload)
+      const { taskId } = await createBatchTask(projectName, payload)
 
       try {
         const result = await callWxOpenAPI('sendSms', {
@@ -469,7 +469,7 @@ const SmsFileTaskModal: React.FC<{
   }
   useShortname: boolean
 }> = ({ actionRef, task = {}, useShortname = false }) => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const { phoneNumberFile, activityId } = task
   const [{ visible, uploadPercent }, setState] = useSetState({
     visible: false,
@@ -509,7 +509,7 @@ const SmsFileTaskModal: React.FC<{
       const res = await callWxOpenAPI('getSmsFileAnalysisData', {
         fileId,
         activityId,
-        projectId,
+        projectName,
       })
 
       let restAmount = 0

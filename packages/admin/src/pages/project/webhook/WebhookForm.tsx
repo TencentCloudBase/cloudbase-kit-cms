@@ -4,7 +4,7 @@ import { Button, Space, message, Form, Input, Select } from 'antd'
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons'
 import { createWebhook, updateWebhook } from '@/services/webhook'
 import { getSchemas } from '@/services/schema'
-import { getProjectId } from '@/utils'
+import { getProjectName } from '@/utils'
 
 const EventMap = {
   create: '创建内容',
@@ -19,7 +19,7 @@ export const WebhookForm: React.FC<{
   selectedWebhook?: Webhook
 }> = ({ onClose, onSuccess, action, selectedWebhook }) => {
   const [form] = Form.useForm()
-  const projectId = getProjectId()
+  const projectName = getProjectName()
 
   const actionText = action === 'create' ? '创建' : '更新'
 
@@ -27,24 +27,24 @@ export const WebhookForm: React.FC<{
   const { run, loading } = useRequest(
     async (webhook: Webhook) => {
       if (action === 'create') {
-        await createWebhook(projectId, {
+        await createWebhook(projectName, {
           payload: {
-            projectId,
+            projectId: projectName,
             ...webhook,
           },
           filter: {
-            projectId,
+            projectId: projectName,
           },
         })
       }
 
       if (action === 'edit') {
-        await updateWebhook(projectId, {
+        await updateWebhook(projectName, {
           filter: {
             _id: selectedWebhook?._id,
           },
           payload: {
-            projectId,
+            projectId: projectName,
             ...webhook,
           },
         })
@@ -61,7 +61,7 @@ export const WebhookForm: React.FC<{
 
   // 加载数据库集合
   const { data: schemas = [], loading: schemaLoading } = useRequest<{ data: Schema[] }>(() =>
-    getSchemas(projectId)
+    getSchemas(projectName)
   )
 
   const eventOptions = Object.keys(EventMap).map((key) => ({
@@ -73,7 +73,9 @@ export const WebhookForm: React.FC<{
   const initialWebhook = {
     ...selectedWebhook,
     type: selectedWebhook?.type || 'http',
-    collections: selectedWebhook?.collections.map((_) => (_?.id ? _.id : _)),
+    collections: selectedWebhook?.collections.map((_) =>
+      _?.collectionName ? _.collectionName : _
+    ),
   }
 
   return (
@@ -88,7 +90,7 @@ export const WebhookForm: React.FC<{
           if (coll === '*') {
             return '*'
           } else {
-            return schemas.find((schema) => coll === schema.id)
+            return schemas.find((schema) => coll === schema.collectionName)
           }
         })
         run(v)

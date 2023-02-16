@@ -19,7 +19,7 @@ import {
 } from 'antd'
 import { useConcent } from 'concent'
 import { ContentCtx, GlobalCtx } from 'typings/store'
-import { copyToClipboard, getProjectId } from '@/utils'
+import { copyToClipboard, getProjectName } from '@/utils'
 import { CopyOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import { IS_KIT_MODE } from '@/kitConstants'
 import { updateSchemaAndCollection } from '@/services/schema'
@@ -31,7 +31,7 @@ const ApiAccessPath: React.FC<{ project: Project; onReload: Function }> = ({
   onReload,
 }) => {
   const accessDomain = window.TcbCmsConfig.cloudAccessPath.replace('tcb-ext-cms-service', '')
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const [state, setState] = useSetState({
     apiPath: '',
     modalVisible: false,
@@ -49,8 +49,8 @@ const ApiAccessPath: React.FC<{ project: Project; onReload: Function }> = ({
 
   // 设置 API 访问路径
   const { loading, run: setApiPath } = useRequest(
-    async (projectId: string, path: string) => {
-      await updateProject(projectId, {
+    async (projectName: string, path: string) => {
+      await updateProject(projectName, {
         keepApiPath,
         apiAccessPath: path,
       })
@@ -59,7 +59,7 @@ const ApiAccessPath: React.FC<{ project: Project; onReload: Function }> = ({
     },
     {
       manual: true,
-      refreshDeps: [projectId, keepApiPath],
+      refreshDeps: [projectName, keepApiPath],
       onError: (e) => message.error(`更新失败 ${e.message}`),
     }
   )
@@ -79,7 +79,7 @@ const ApiAccessPath: React.FC<{ project: Project; onReload: Function }> = ({
               modalVisible: true,
             })
           } else {
-            setApiPath(projectId, v?.path)
+            setApiPath(projectName, v?.path)
           }
         }}
       >
@@ -125,7 +125,7 @@ const ApiAccessPath: React.FC<{ project: Project; onReload: Function }> = ({
             modalVisible: false,
           })
         }
-        onOk={async () => setApiPath(projectId, state.apiPath)}
+        onOk={async () => setApiPath(projectName, state.apiPath)}
       >
         <div>
           <Space>
@@ -167,7 +167,7 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
   const { setting } = ctx.state
   const accessDomain = window.TcbCmsConfig.cloudAccessPath.replace(/(tcb|wx)-ext-cms-service/, '')
 
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   // 使用 content module 的数据，获取 layout 时，必然被加载、刷新
   const contentCtr = useConcent<{}, ContentCtx>('content')
   const schemas = contentCtr.state.schemas
@@ -179,21 +179,23 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
   // 保存修改
   const { run: changePermission, loading } = useRequest(
     async () => {
-      // await updateProject(projectId, {
+      // await updateProject(projectName, {
       //   readableCollections,
       //   modifiableCollections,
       //   deletableCollections,
       // })
       await Promise.all(
         schemas
-          ?.filter((item) => item.enableApiAccess !== readableCollections?.includes(item.id))
+          ?.filter(
+            (item) => item.enableApiAccess !== readableCollections?.includes(item.collectionName)
+          )
           .map((item) =>
-            updateSchemaAndCollection(projectId, item.id, {
-              enableApiAccess: readableCollections?.includes(item.id),
+            updateSchemaAndCollection(projectName, item.collectionName, {
+              enableApiAccess: readableCollections?.includes(item.collectionName),
             })
           )
       )
-      await contentCtr.mr.getContentSchemas(projectId)
+      await contentCtr.mr.getContentSchemas(projectName)
       onReload()
     },
     {
@@ -204,10 +206,10 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
   )
 
   useEffect(() => {
-    if (project?.id) {
+    if (project?.projectName) {
       // setReadableCollections(project.readableCollections || [])
       setReadableCollections(
-        schemas?.filter((item) => item?.enableApiAccess)?.map((item) => item.id) || []
+        schemas?.filter((item) => item?.enableApiAccess)?.map((item) => item.collectionName) || []
       )
       setModifiableCollections(project.modifiableCollections || [])
       setDeletableCollections(project.deletableCollections || [])
@@ -229,10 +231,10 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
           <Space>
             <span>{schema.displayName}</span>
             <Checkbox
-              checked={readableCollections?.includes(schema.id)}
+              checked={readableCollections?.includes(schema.collectionName)}
               onChange={(e) => {
                 setReadableCollections(
-                  modifyArray(readableCollections, schema.id, e.target.checked)
+                  modifyArray(readableCollections, schema.collectionName, e.target.checked)
                 )
               }}
             >
@@ -240,10 +242,10 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
             </Checkbox>
             {false && (
               <Checkbox
-                checked={modifiableCollections?.includes(schema.collectionName)}
+                checked={modifiableCollections?.includes(schema.collectionOldName)}
                 onChange={(e) =>
                   setModifiableCollections(
-                    modifyArray(modifiableCollections, schema.collectionName, e.target.checked)
+                    modifyArray(modifiableCollections, schema.collectionOldName, e.target.checked)
                   )
                 }
               >
@@ -252,10 +254,10 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
             )}
             {false && (
               <Checkbox
-                checked={deletableCollections?.includes(schema.collectionName)}
+                checked={deletableCollections?.includes(schema.collectionOldName)}
                 onChange={(e) =>
                   setDeletableCollections(
-                    modifyArray(deletableCollections, schema.collectionName, e.target.checked)
+                    modifyArray(deletableCollections, schema.collectionOldName, e.target.checked)
                   )
                 }
               >
@@ -273,9 +275,9 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
                     if (!path && false) {
                       message.error('未设置 API 访问路径')
                     } else {
-                      // copyToClipboard(`https://${accessDomain}${path}/v1.0/${schema.collectionName}`)
+                      // copyToClipboard(`https://${accessDomain}${path}/v1.0/${schema.collectionOldName}`)
                       copyToClipboard(
-                        `https://${window.TcbCmsConfig.envId}.${window.TcbCmsConfig.region}.kits.tcloudbase.com/cms/${window.TcbCmsConfig.kitId}/v1/open-api/projects/${projectId}/collections/${schema.id}/contents?limit=10&offset=0`
+                        `https://${window.TcbCmsConfig.envId}.${window.TcbCmsConfig.region}.kits.tcloudbase.com/cms/${window.TcbCmsConfig.kitId}/v1/open-api/projects/${projectName}/collections/${schema.collectionName}/contents?limit=10&offset=0`
                       )
                       message.success('复制成功')
                     }
@@ -301,13 +303,13 @@ export default (): React.ReactElement => {
   const ctx = useConcent<{}, GlobalCtx>('global')
   const { setting } = ctx.state
 
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const [reloadFlag, setReloadFlag] = useState(0)
   // 重新加载 project 信息
   const reload = useCallback(() => setReloadFlag(reloadFlag + 1), [reloadFlag])
 
   // 重新获取数据
-  const { data: project, loading } = useRequest(() => getProject(projectId), {
+  const { data: project, loading } = useRequest(() => getProject(projectName), {
     refreshDeps: [reloadFlag],
   })
 
@@ -323,18 +325,18 @@ export default (): React.ReactElement => {
   const { loading: toggleLoading, run: toggleApiAccess } = useRequest(
     async () => {
       try {
-        await updateProject(projectId, {
+        await updateProject(projectName, {
           enableApiAccess: false,
         })
         message.success(`已清理项目 API 访问`)
         reload()
       } catch (e) {
-        message.error(`更新失败 ${e.message}`)
+        message.error(`更新失败 ${(e as any)?.message}`)
       }
     },
     {
       manual: true,
-      refreshDeps: [projectId],
+      refreshDeps: [projectName],
     }
   )
 

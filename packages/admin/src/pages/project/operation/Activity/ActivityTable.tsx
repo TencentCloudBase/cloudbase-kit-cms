@@ -12,7 +12,7 @@ import { getTableColumns } from '@/pages/project/content/columns'
 import ContentTableSearchForm from '@/pages/project/content/SearchForm'
 import { exportData, formatSearchParams } from '@/pages/project/content/tool'
 import { useSetState } from 'react-use'
-import { getProjectId, redirectTo } from '@/utils'
+import { getProjectName, redirectTo } from '@/utils'
 import ActivityChannels from './Channel'
 
 const { Option } = Select
@@ -35,7 +35,7 @@ export const ActivityTable: React.FC<{
     appPathQuery: '',
   })
 
-  const projectId = getProjectId()
+  const projectName = getProjectName()
 
   // 检索的字段
   const { searchFields, searchParams } = ctx.state
@@ -51,13 +51,13 @@ export const ActivityTable: React.FC<{
       filter: any
     ) => {
       const { pageSize, current } = params
-      const resource = currentSchema.collectionName
+      const resource = currentSchema.collectionOldName
 
       // 搜索参数
       const fuzzyFilter = formatSearchParams(searchParams, currentSchema)
 
       try {
-        const { data = [], total } = await getContents(projectId, resource, {
+        const { data = [], total } = await getContents(projectName, resource, {
           sort,
           filter,
           pageSize,
@@ -167,7 +167,7 @@ export const ActivityTable: React.FC<{
                 },
                 onOk: async () => {
                   try {
-                    await deleteContent(projectId, currentSchema.collectionName, row._id)
+                    await deleteContent(projectName, currentSchema.collectionOldName, row._id)
                     tableRef?.current?.reload()
                     message.success('删除内容成功')
                   } catch (error) {
@@ -185,7 +185,7 @@ export const ActivityTable: React.FC<{
   }, [currentSchema])
 
   // 表格多选操作
-  const tableAlerRender = useMemo(() => getTableAlertRender(projectId, currentSchema, tableRef), [
+  const tableAlerRender = useMemo(() => getTableAlertRender(projectName, currentSchema, tableRef), [
     currentSchema,
   ])
 
@@ -203,7 +203,7 @@ export const ActivityTable: React.FC<{
         icon={<PlusOutlined />}
         disabled={!currentSchema.fields?.length}
         onClick={() => {
-          if (!currentSchema?.id) {
+          if (!currentSchema?.collectionName) {
             message.error('请选择需要创建的内容类型！')
             return
           }
@@ -287,7 +287,7 @@ export const ActivityTable: React.FC<{
 /**
  * Table 批量操作
  */
-const getTableAlertRender = (projectId: string, currentSchema: Schema, tableRef: any) => ({
+const getTableAlertRender = (projectName: string, currentSchema: Schema, tableRef: any) => ({
   intl,
   selectedRowKeys,
   selectedRows,
@@ -323,7 +323,7 @@ const getTableAlertRender = (projectId: string, currentSchema: Schema, tableRef:
                 onOk: async () => {
                   try {
                     const ids = selectedRows.map((_: any) => _._id)
-                    await batchDeleteContent(projectId, currentSchema.collectionName, ids)
+                    await batchDeleteContent(projectName, currentSchema.collectionOldName, ids)
                     tableRef?.current?.reload()
                     message.success('删除内容成功')
                   } catch (error) {

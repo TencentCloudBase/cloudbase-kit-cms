@@ -28,16 +28,16 @@ export default () => {
   useEffect(() => {
     if (!data) return
     const { schema, project } = data
-    const projectId = project?.id || schema?.projectId
+    const projectName = project?.projectName || schema?.projectName
 
     // 跳转到对应的集合管理页面
-    if (schema?.id) {
-      redirectTo(`content/${schema.id}`, {
-        projectId,
+    if (schema?.collectionName) {
+      redirectTo(`content/${schema.collectionName}`, {
+        projectName: projectName,
       })
     } else if (project) {
       redirectTo('home', {
-        projectId,
+        projectName: projectName,
       })
     } else {
       history.push('/home')

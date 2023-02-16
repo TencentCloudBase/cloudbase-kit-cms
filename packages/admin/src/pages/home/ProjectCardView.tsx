@@ -74,17 +74,19 @@ export default function ProjectListView({
               currentProject: project,
             })
             redirectTo('home', {
-              projectId: project.id,
+              projectName: project.projectName,
             })
           }}
         >
           <Card bordered={false} style={cardStyle} bodyStyle={cardBodyStyle}>
-            <ProjectIcon className="flex items-center">{project.name.slice(0, 1)}</ProjectIcon>
+            <ProjectIcon className="flex items-center">
+              {project.displayName.slice(0, 1)}
+            </ProjectIcon>
           </Card>
           <div className="ml-5 flex-1" style={{ maxWidth: '140px' }}>
-            <Tooltip title={project.name} placement="topLeft">
+            <Tooltip title={project.displayName} placement="topLeft">
               <Title level={4} ellipsis>
-                {project.name}
+                {project.displayName}
               </Title>
             </Tooltip>
             <Tooltip title={project.description} placement="bottomLeft">

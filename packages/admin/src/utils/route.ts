@@ -26,15 +26,15 @@ export const getPageQuery = (): Record<string, string> => {
 }
 
 /**
- * 从 url 中获取项目 id
+ * 从 url 中获取项目 name
  */
-export const getProjectId = () => {
+export const getProjectName = () => {
   // 全局 state
   const state: any = getState()
   // page query
   const query = getPageQuery()
 
-  return query?.pid || state?.global?.currentProject?._id || ''
+  return query?.pname || state?.global?.currentProject?.projectName || ''
 }
 
 /**
@@ -43,20 +43,20 @@ export const getProjectId = () => {
 export const redirectTo = (
   pathname: string,
   options: {
-    projectId?: string
+    projectName?: string
     query?: Record<string, string>
   } = {}
 ) => {
   const pageQuery = getPageQuery()
-  const { projectId, query } = options
-  const pid: string = projectId || (pageQuery?.pid as string) || ''
+  const { projectName, query } = options
+  const pname: string = projectName || (pageQuery?.pname as string) || ''
 
   const path = pathname[0] === '/' ? pathname.slice(1) : pathname
 
   history.push({
     pathname: `/project/${path}`,
     query: {
-      pid,
+      pname,
       ...query,
     },
   })

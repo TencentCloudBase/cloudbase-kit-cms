@@ -3,7 +3,7 @@ import React, { useRef } from 'react'
 import { PageContainer } from '@ant-design/pro-layout'
 import ProTable, { ActionType, ProColumns } from '@ant-design/pro-table'
 import { getMigrateJobs, parseJsonLinesFile } from '@/services/content'
-import { downloadFile, downloadFileFromUrl, getFileNameFromUrl, getProjectId } from '@/utils'
+import { downloadFile, downloadFileFromUrl, getFileNameFromUrl, getProjectName } from '@/utils'
 import { Button, message } from 'antd'
 
 const StatusMap = {
@@ -86,10 +86,10 @@ const MigrateJobColumns: ProColumns<MigrateJobDto>[] = [
 
       const { run: download, loading } = useRequest(
         async () => {
-          const projectId = getProjectId()
+          const projectName = getProjectName()
           // JSON 格式
           if (/\.json$/.test(row.filePath)) {
-            const { data: fileID } = await parseJsonLinesFile(projectId, row.fileUrl)
+            const { data: fileID } = await parseJsonLinesFile(projectName, row.fileUrl)
             await downloadFile(fileID)
           } else {
             await downloadFileFromUrl(row.fileUrl, `${getFileNameFromUrl(row.fileUrl)}`)
@@ -125,7 +125,7 @@ const columns: ProColumns<MigrateJobDto>[] = MigrateJobColumns.map((item) => ({
 }))
 
 export default (): React.ReactNode => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
 
   const tableRef = useRef<ActionType>()
 
@@ -142,7 +142,7 @@ export default (): React.ReactNode => {
     const { current, pageSize } = params
 
     try {
-      const { data = [], total } = await getMigrateJobs(projectId, current, pageSize)
+      const { data = [], total } = await getMigrateJobs(projectName, current, pageSize)
 
       return {
         data,

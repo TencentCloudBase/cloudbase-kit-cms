@@ -7,7 +7,7 @@ import ProTable, { ActionType, ProColumns } from '@ant-design/pro-table'
 import { Button, Modal, message, Space, Row, Col, Dropdown, Menu, Select } from 'antd'
 import { PlusOutlined, DeleteOutlined, FilterOutlined, ExportOutlined } from '@ant-design/icons'
 import { getContents, deleteContent, batchDeleteContent } from '@/services/content'
-import { getProjectId, getSchemaAllFields, redirectTo } from '@/utils'
+import { getProjectName, getSchemaAllFields, redirectTo } from '@/utils'
 import { ContentCtx } from 'typings/store'
 import { SortOrder } from 'antd/lib/table/interface'
 import { exportData, formatFilter, formatSearchParams } from './tool'
@@ -28,7 +28,7 @@ const negativeTypes = ['File', 'Image']
 export const ContentTable: React.FC<{
   currentSchema: Schema
 }> = (props) => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const { currentSchema } = props
   const ctx = useConcent<{}, ContentCtx>('content')
   const { schemaId = 'default' } = useParams<UrlParams>()
@@ -47,13 +47,13 @@ export const ContentTable: React.FC<{
       filter: Record<string, React.ReactText[]>
     ) => {
       const { pageSize, current } = params
-      const resource = currentSchema.collectionName
+      const resource = currentSchema.collectionOldName
 
       // 搜索参数
       const fuzzyFilter = formatSearchParams(searchParams, currentSchema)
 
       try {
-        const { data = [], total } = await getContents(projectId, currentSchema.id, {
+        const { data = [], total } = await getContents(projectName, currentSchema.collectionName, {
           sort,
           pageSize,
           fuzzyFilter,
@@ -147,7 +147,7 @@ export const ContentTable: React.FC<{
                 },
                 onOk: async () => {
                   try {
-                    await deleteContent(projectId, currentSchema.id, row._id)
+                    await deleteContent(projectName, currentSchema.collectionName, row._id)
                     tableRef?.current?.reload()
                     message.success('删除内容成功')
                   } catch (error) {
@@ -165,7 +165,7 @@ export const ContentTable: React.FC<{
   }, [currentSchema])
 
   // 表格多选操作
-  const tableAlerRender = useMemo(() => getTableAlertRender(projectId, currentSchema, tableRef), [
+  const tableAlerRender = useMemo(() => getTableAlertRender(projectName, currentSchema, tableRef), [
     currentSchema,
   ])
 
@@ -185,7 +185,7 @@ export const ContentTable: React.FC<{
         icon={<PlusOutlined />}
         disabled={!currentSchema.fields?.length}
         onClick={() => {
-          if (!currentSchema?.id) {
+          if (!currentSchema?.collectionName) {
             message.error('请选择需要创建的内容类型！')
             return
           }
@@ -199,13 +199,13 @@ export const ContentTable: React.FC<{
       >
         新建
       </Button>,
-      !IS_KIT_MODE && <DataImport key="import" collectionName={currentSchema.collectionName} />,
+      !IS_KIT_MODE && <DataImport key="import" collectionName={currentSchema.collectionOldName} />,
       !IS_KIT_MODE && (
         <DataExport
           key="export"
           schema={currentSchema}
           searchParams={searchParams}
-          collectionName={currentSchema.collectionName}
+          collectionName={currentSchema.collectionOldName}
         />
       ),
     ],
@@ -266,7 +266,7 @@ export const ContentTable: React.FC<{
 /**
  * Table 批量操作
  */
-const getTableAlertRender = (projectId: string, currentSchema: Schema, tableRef: any) => ({
+const getTableAlertRender = (projectName: string, currentSchema: Schema, tableRef: any) => ({
   intl,
   selectedRowKeys,
   selectedRows,
@@ -308,7 +308,7 @@ const getTableAlertRender = (projectId: string, currentSchema: Schema, tableRef:
                   onOk: async () => {
                     try {
                       const ids = selectedRows.map((_: any) => _._id)
-                      await batchDeleteContent(projectId, currentSchema.id, ids)
+                      await batchDeleteContent(projectName, currentSchema.collectionName, ids)
                       tableRef?.current?.reload()
                       message.success('删除内容成功')
                     } catch (error) {

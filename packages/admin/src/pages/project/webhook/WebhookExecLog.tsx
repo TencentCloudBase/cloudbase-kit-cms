@@ -1,7 +1,7 @@
 import React from 'react'
 import ProTable, { ProColumns } from '@ant-design/pro-table'
 import { getWebhookLog } from '@/services/webhook'
-import { getProjectId } from '@/utils'
+import { getProjectName } from '@/utils'
 import { WebhookLogColumns } from './columns'
 
 const columns: ProColumns<any>[] = WebhookLogColumns.map((item) => ({
@@ -10,7 +10,7 @@ const columns: ProColumns<any>[] = WebhookLogColumns.map((item) => ({
 }))
 
 export default () => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
 
   // 获取 webhooks
   const tableRequest = async (
@@ -25,7 +25,7 @@ export default () => {
     const { current, pageSize } = params
 
     try {
-      const { data = [], total } = await getWebhookLog(projectId, {
+      const { data = [], total } = await getWebhookLog(projectName, {
         sort: {
           timestamp: 'descend',
         },

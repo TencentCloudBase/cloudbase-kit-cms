@@ -43,7 +43,7 @@ const SchemaFieldPicker: React.FC = () => {
               hoverable
               className="field-card"
               onClick={() => {
-                if (!currentSchema) {
+                if (!currentSchema?.collectionName) {
                   message.info('请选择需要编辑的模型')
                   return
                 }

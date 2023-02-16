@@ -2,7 +2,7 @@ import { useConcent } from 'concent'
 import React, { useCallback, useMemo, useState } from 'react'
 import { Modal, Typography, Upload, message, Checkbox, Space, Alert } from 'antd'
 import { SchmeaCtx, ContentCtx } from 'typings/store'
-import { getProjectId, random, readFile, saveContentToFile } from '@/utils'
+import { getProjectName, random, readFile, saveContentToFile } from '@/utils'
 import { InboxOutlined } from '@ant-design/icons'
 import { createSchema } from '@/services/schema'
 
@@ -30,10 +30,10 @@ export const SchemaExportModal: React.FC<{
   // 可选 Schemas
   const schemaOptions = useMemo(() => {
     if (!schemas?.length) return []
-    return schemas?.map(({ displayName, collectionName }) => {
+    return schemas?.map(({ displayName, collectionOldName }) => {
       return {
         label: displayName,
-        value: collectionName,
+        value: collectionOldName,
       }
     })
   }, [schemas])
@@ -66,10 +66,16 @@ export const SchemaExportModal: React.FC<{
       title="选择导出需要导出的模型"
       onOk={async () => {
         const exportSchemas = selectedSchemas.map((_: string) => {
-          const schema = schemas.find((item) => item.collectionName === _) as Schema
+          const schema = schemas.find((item) => item.collectionOldName === _) as Schema
           // 关联字段记录了 schema 的 id，导出 schema 需要携带 _id
-          const { fields, collectionName, displayName, description, id: _id } = schema
-          return { fields, collectionName, displayName, description, _id }
+          const {
+            fields,
+            collectionOldName,
+            displayName,
+            description,
+            collectionName: _id,
+          } = schema
+          return { fields, collectionOldName, displayName, description, _id }
         })
         const fileName = `schema-export-${random(8)}.json`
         saveContentToFile(JSON.stringify(exportSchemas), fileName)
@@ -103,7 +109,7 @@ export const SchemaImportModal: React.FC<{
   visible: boolean
   onClose: () => void
 }> = ({ visible, onClose }) => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const ctx = useConcent<{}, SchmeaCtx>('schema')
   const contentCtx = useConcent<{}, ContentCtx>('content')
   const { schemas } = ctx.state
@@ -141,7 +147,7 @@ export const SchemaImportModal: React.FC<{
 
         // 检查集合名是否存在冲突
         const conflict = importData.some((_: any) =>
-          schemas.find((item) => item.collectionName === _.collectionName)
+          schemas.find((item) => item.collectionOldName === _.collectionName)
         )
 
         if (conflict) {
@@ -169,18 +175,18 @@ export const SchemaImportModal: React.FC<{
   const onImportData = useCallback(async () => {
     setLoading(true)
     try {
-      const tasks = importSchemas.map(async (_) => await createSchema(projectId, _.schema))
+      const tasks = importSchemas.map(async (_) => await createSchema(projectName, _.schema))
       await Promise.all(tasks)
       message.success('导入模型成功！')
-      ctx.mr.getSchemas(projectId)
-      contentCtx.mr.getContentSchemas(projectId)
+      ctx.mr.getSchemas(projectName)
+      contentCtx.mr.getContentSchemas(projectName)
     } catch (error) {
       message.error('导入模型失败')
     } finally {
       onClose()
     }
     setLoading(false)
-  }, [importSchemas, projectId])
+  }, [importSchemas, projectName])
 
   return (
     <Modal
@@ -243,7 +249,7 @@ export const SchemaImportModal: React.FC<{
           <Paragraph>共计 {importSchemas.length} 个模型</Paragraph>
           {importSchemas.map((_, index) => (
             <Paragraph key={index}>
-              模型名称：{_?.schema.displayName}，数据库名：{_?.schema.collectionName}，共计{' '}
+              模型名称：{_?.schema.displayName}，数据库名：{_?.schema.collectionOldName}，共计{' '}
               {_?.schema.fields?.length} 个字段
             </Paragraph>
           ))}

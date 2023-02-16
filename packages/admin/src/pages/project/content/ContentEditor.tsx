@@ -10,7 +10,7 @@ import { LeftCircleTwoTone } from '@ant-design/icons'
 import {
   getDocInitialValues,
   getDocChangedValues,
-  getProjectId,
+  getProjectName,
   getSchemaCustomFields,
 } from '@/utils'
 import { IS_KIT_MODE } from '@/kitConstants'
@@ -19,7 +19,7 @@ import { getSchemaFileds } from '@/services/schema'
 const { Text } = Typography
 
 const ContentEditor: React.FC = () => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const { schemaId } = useParams<UrlParams>()
   const ctx = useConcent('content')
   const { selectedContent, contentAction } = ctx.state
@@ -28,15 +28,18 @@ const ContentEditor: React.FC = () => {
   } = ctx
 
   // 文档模型
-  const schema: Schema = schemas?.find((item: Schema) => item.id === schemaId) || currentSchema
+  const schema: Schema =
+    schemas?.find((item: Schema) => item.collectionName === schemaId) || currentSchema
 
   // 为当前选择的模型拉取数据格式
   useEffect(() => {
-    if (IS_KIT_MODE && !!schema?.id && !schema?.fields) {
-      const projectId = getProjectId()
-      getSchemaFileds(projectId, schema.id).then((res) => {
+    if (IS_KIT_MODE && !!schema?.collectionName && !schema?.fields) {
+      const projectName = getProjectName()
+      getSchemaFileds(projectName, schema.collectionName).then((res) => {
         const fields = res.data.map((item) => ({ ...item?.['schema'], id: item.id }))
-        const schemaIndex = (schemas as Schema[])?.findIndex((item) => item.id === schemaId)
+        const schemaIndex = (schemas as Schema[])?.findIndex(
+          (item) => item.collectionName === schemaId
+        )
         const newSchemas = [...schemas]
         newSchemas[schemaIndex].fields = [...fields]
         !!res?.data &&
@@ -58,13 +61,13 @@ const ContentEditor: React.FC = () => {
   const { run, loading } = useRequest(
     async (payload: any) => {
       if (contentAction === 'create') {
-        await createContent(projectId, schema?.id, payload)
+        await createContent(projectName, schema?.collectionName, payload)
       }
 
       if (contentAction === 'edit') {
         // 只更新变更过的字段
         const updatedData = getDocChangedValues(initialValues, payload)
-        await updateContent(projectId, schema?.id, selectedContent._id, updatedData)
+        await updateContent(projectName, schema?.collectionName, selectedContent._id, updatedData)
       }
     },
     {

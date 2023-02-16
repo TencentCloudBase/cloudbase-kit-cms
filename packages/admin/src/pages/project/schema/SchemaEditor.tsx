@@ -5,7 +5,7 @@ import { SchmeaCtx } from 'typings/store'
 import { createSchema, updateSchemaAndCollection, updateSchemaFiled } from '@/services/schema'
 import { Modal, Form, message, Input, Space, Button, Typography, Tooltip } from 'antd'
 import { QuestionCircleTwoTone } from '@ant-design/icons'
-import { getSystemConfigurableFields, getProjectId } from '@/utils'
+import { getSystemConfigurableFields, getProjectName } from '@/utils'
 import { IS_KIT_MODE } from '@/kitConstants'
 
 const { TextArea } = Input
@@ -31,7 +31,7 @@ const getSchemaInitialValues = (action: string, currentSchema: Schema) => {
     case 'copy':
       return {
         ...currentSchema,
-        collectionName: `${currentSchema.collectionName}-copy`,
+        collectionName: `${currentSchema.collectionOldName}-copy`,
       }
     default:
       return currentSchema
@@ -42,7 +42,7 @@ const getSchemaInitialValues = (action: string, currentSchema: Schema) => {
  * 新建/更新模型
  */
 const SchemaEditor: React.FC = () => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const ctx = useConcent<{}, SchmeaCtx>('schema')
   const contentCtx = useConcent('content')
   const { schemaEditAction, schemaEditVisible, currentSchema } = ctx.state
@@ -60,8 +60,8 @@ const SchemaEditor: React.FC = () => {
   const { run, loading } = useRequest(
     async (data: Schema) => {
       const {
+        collectionName: id,
         displayName,
-        collectionName,
         description,
         docCreateTimeField,
         docUpdateTimeField,
@@ -69,9 +69,9 @@ const SchemaEditor: React.FC = () => {
 
       // 新建模型
       if (schemaEditAction === 'create') {
-        await createSchema(projectId, {
+        await createSchema(projectName, {
+          collectionName: id,
           displayName,
-          collectionName,
           description,
           docCreateTimeField,
           docUpdateTimeField,
@@ -94,8 +94,9 @@ const SchemaEditor: React.FC = () => {
             {}
           )
 
-        // await updateSchemaFiled(projectId, currentSchema?.id, diffData)
-        IS_KIT_MODE && (await updateSchemaAndCollection(projectId, currentSchema?.id, diffData))
+        // await updateSchemaFiled(projectName, currentSchema?.id, diffData)
+        IS_KIT_MODE &&
+          (await updateSchemaAndCollection(projectName, currentSchema?.collectionName, diffData))
       }
 
       // 复制模型
@@ -110,12 +111,12 @@ const SchemaEditor: React.FC = () => {
             {}
           )
 
-        await createSchema(projectId, { ...newSchema, fields: currentSchema.fields })
+        await createSchema(projectName, { ...newSchema, fields: currentSchema.fields })
       }
 
       onClose()
-      ctx.mr.getSchemas(projectId)
-      contentCtx.dispatch('getContentSchemas', projectId)
+      ctx.mr.getSchemas(projectName)
+      contentCtx.dispatch('getContentSchemas', projectName)
     },
     {
       manual: true,
@@ -152,37 +153,40 @@ const SchemaEditor: React.FC = () => {
         }}
       >
         <Form.Item
+          name="collectionName"
+          label={
+            <>
+              模型名称
+              {/* {schemaEditAction === 'edit' && (
+                  <Typography.Text type="danger">
+                    【更改数据库名会自动重命名原数据库（危险操作！仅管理员可操作！）】
+                  </Typography.Text>
+                )} */}
+            </>
+          }
+          rules={[
+            { required: true, message: '请输入模型名称！' },
+            {
+              pattern: /^[a-z0-9A-Z_-]+$/,
+              message: '只能使用英文字母、数字、-、_ 等符号',
+            },
+          ]}
+        >
+          <Input
+            disabled={schemaEditAction === 'edit'}
+            showCount
+            maxLength={15}
+            placeholder="模型名称，如 article"
+          />
+        </Form.Item>
+
+        <Form.Item
           label="展示名称"
           name="displayName"
           rules={[{ required: true, message: '请输入展示名称！' }]}
         >
           <Input showCount maxLength={15} placeholder="展示名称，如文章" />
         </Form.Item>
-
-        {!IS_KIT_MODE && (
-          <Form.Item
-            name="collectionName"
-            label={
-              <>
-                数据库名
-                {schemaEditAction === 'edit' && (
-                  <Typography.Text type="danger">
-                    【更改数据库名会自动重命名原数据库（危险操作！仅管理员可操作！）】
-                  </Typography.Text>
-                )}
-              </>
-            }
-            rules={[
-              { required: true, message: '请输入数据库名称！' },
-              {
-                pattern: /^[a-z0-9A-Z_-]+$/,
-                message: '只能使用英文字母、数字、-、_ 等符号',
-              },
-            ]}
-          >
-            <Input placeholder="数据库名，如 article" />
-          </Form.Item>
-        )}
 
         <Form.Item label="描述信息" name="description">
           <TextArea

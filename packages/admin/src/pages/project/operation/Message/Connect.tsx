@@ -3,7 +3,7 @@ import { Typography, message, Tag, Select, Spin } from 'antd'
 import { useRequest } from 'umi'
 import { useConcent } from 'concent'
 import { getContents, Options } from '@/services/content'
-import { calculateFieldWidth, getProjectId, getValueOrSlug } from '@/utils'
+import { calculateFieldWidth, getProjectName, getValueOrSlug } from '@/utils'
 import { ContentCtx } from 'typings/store'
 import { ActivitySchema } from '../Activity/schema'
 
@@ -62,7 +62,7 @@ export const IConnectEditor: React.FC<{
   field: SchemaField
   onChange?: (v: string | string[]) => void
 }> = (props) => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const { value = [], onChange, field } = props
   const ctx = useConcent<{}, ContentCtx>('content')
   const { connectField, connectResource, connectMany } = field
@@ -89,7 +89,7 @@ export const IConnectEditor: React.FC<{
         }
       }
 
-      const { data } = await getContents(projectId, connectSchema.collectionName, fetchOptions)
+      const { data } = await getContents(projectName, connectSchema.collectionName, fetchOptions)
 
       setDocs(data)
       setLoading(false)

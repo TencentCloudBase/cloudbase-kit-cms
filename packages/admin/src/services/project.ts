@@ -1,7 +1,7 @@
 import { tcbRequest } from '@/utils'
 
-export async function getProject(id: string): Promise<{ data: Project }> {
-  const res = await tcbRequest(`/projects/${id}`, {
+export async function getProject(projectName: string): Promise<{ data: Project }> {
+  const res = await tcbRequest(`/projects/${projectName}`, {
     method: 'GET',
   })
   return { data: res }
@@ -15,7 +15,11 @@ export async function getProjects() {
   })
 }
 
-export async function createProject(payload: { name: string; description: string }) {
+export async function createProject(payload: {
+  projectName: string
+  displayName: string
+  description: string
+}) {
   return tcbRequest<{
     data: Project[]
   }>('/projects', {
@@ -25,21 +29,21 @@ export async function createProject(payload: { name: string; description: string
 }
 
 export async function updateProject(
-  id: string,
+  projectName: string,
   payload: Partial<Project> & { keepApiPath?: boolean }
 ) {
   return tcbRequest<{
     data: Project[]
-  }>(`/projects/${id}`, {
+  }>(`/projects/${projectName}`, {
     method: 'PATCH',
     data: payload,
   })
 }
 
-export async function deleteProject(id: string) {
+export async function deleteProject(projectName: string) {
   return tcbRequest<{
     data: Project[]
-  }>(`/projects/${id}`, {
+  }>(`/projects/${projectName}`, {
     method: 'DELETE',
   })
 }

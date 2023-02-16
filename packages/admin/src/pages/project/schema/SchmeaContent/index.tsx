@@ -28,7 +28,7 @@ const SchemaContent: React.FC = () => {
   return (
     <>
       <Content className="full-height schema-layout-content">
-        {currentSchema?.id ? (
+        {currentSchema?.collectionName ? (
           <Row>
             <Col flex="1 1 auto" />
             <Col flex="0 1 600px">

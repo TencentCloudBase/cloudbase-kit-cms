@@ -2,7 +2,7 @@ import { useConcent } from 'concent'
 import React, { useState, useCallback, useEffect } from 'react'
 import { Modal, message, Space, Checkbox, Typography, Tooltip } from 'antd'
 import { EditTwoTone, DeleteTwoTone, ExportOutlined, CopyOutlined } from '@ant-design/icons'
-import { getProjectId, random, saveContentToFile } from '@/utils'
+import { getProjectName, random, saveContentToFile } from '@/utils'
 import { deleteSchemaAndCollection, deleteSchema } from '@/services/schema'
 import { ContentCtx, SchmeaCtx } from 'typings/store'
 import { IS_KIT_MODE } from '@/kitConstants'
@@ -39,9 +39,9 @@ const SchemaEdit: React.FC = () => {
         modal.destroy()
       },
       onOk: () => {
-        const fileName = `schema-${currentSchema.collectionName}-${random(8)}.json`
-        const { fields, collectionName, displayName } = currentSchema
-        saveContentToFile(JSON.stringify([{ fields, collectionName, displayName }]), fileName)
+        const fileName = `schema-${currentSchema.collectionOldName}-${random(8)}.json`
+        const { fields, collectionOldName, displayName } = currentSchema
+        saveContentToFile(JSON.stringify([{ fields, collectionOldName, displayName }]), fileName)
         message.success('模型导出成功！')
       },
     })
@@ -95,7 +95,7 @@ export const DeleteSchemaModal: React.FC<{
   visible: boolean
   onClose: () => void
 }> = ({ visible, onClose }) => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const ctx = useConcent<{}, SchmeaCtx>('schema')
   const contentCtx = useConcent<{}, ContentCtx>('content')
   const { currentSchema } = ctx.state
@@ -119,13 +119,13 @@ export const DeleteSchemaModal: React.FC<{
         try {
           setLoading(true)
           if (IS_KIT_MODE) {
-            await deleteSchemaAndCollection(projectId, currentSchema?.id)
+            await deleteSchemaAndCollection(projectName, currentSchema?.collectionName)
           } else {
-            await deleteSchema(projectId, currentSchema?.id, deleteCollection)
+            await deleteSchema(projectName, currentSchema?.collectionName, deleteCollection)
           }
           message.success('删除内容模型成功！')
-          ctx.dispatch('getSchemas', projectId)
-          contentCtx.dispatch('getContentSchemas', projectId)
+          ctx.dispatch('getSchemas', projectName)
+          contentCtx.dispatch('getContentSchemas', projectName)
         } catch (error) {
           message.error('删除内容模型失败！')
         } finally {
@@ -137,7 +137,7 @@ export const DeleteSchemaModal: React.FC<{
       <Space direction="vertical">
         <Typography.Text>
           确认删【{currentSchema?.displayName}
-          {currentSchema?.collectionName && ` (${currentSchema?.collectionName})`}】内容模型？
+          {currentSchema?.collectionOldName && ` (${currentSchema?.collectionOldName})`}】内容模型？
         </Typography.Text>
         {!IS_KIT_MODE && (
           <Checkbox

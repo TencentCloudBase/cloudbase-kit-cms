@@ -10,7 +10,7 @@ import { useSetState } from 'react-use'
 import { AlertTwoTone, QuestionCircleOutlined } from '@ant-design/icons'
 import { FunnelChart, PieChart } from '@/components/Charts'
 import { getAnalyticsData } from '@/services/operation'
-import { getHour, getProjectId, redirectTo } from '@/utils'
+import { getHour, getProjectName, redirectTo } from '@/utils'
 import { ActivitySchema } from '../Activity/schema'
 import DataSource from './DataSource'
 
@@ -30,7 +30,7 @@ const colProps = {
 }
 
 export default (): React.ReactNode => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const globalCtx = useConcent<{}, GlobalCtx>('global')
   const { setting } = globalCtx.state
 
@@ -54,7 +54,7 @@ export default (): React.ReactNode => {
         : undefined
 
       try {
-        const { data = [] } = await getContents(projectId, ActivitySchema.collectionName, {
+        const { data = [] } = await getContents(projectName, ActivitySchema.collectionName, {
           fuzzyFilter,
         })
 

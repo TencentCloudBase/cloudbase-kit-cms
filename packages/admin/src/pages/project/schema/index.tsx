@@ -4,7 +4,7 @@ import ProCard from '@ant-design/pro-card'
 import { Layout, Button, Space } from 'antd'
 import { ExportOutlined, ImportOutlined, PlusOutlined } from '@ant-design/icons'
 import { PageContainer } from '@ant-design/pro-layout'
-import { getProjectId } from '@/utils'
+import { getProjectName } from '@/utils'
 import { SchmeaCtx } from 'typings/store'
 
 import { SchemaExportModal, SchemaImportModal } from './SchemaShare'
@@ -26,7 +26,7 @@ export interface TableListItem {
 }
 
 export default (): React.ReactNode => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const ctx = useConcent<{}, SchmeaCtx>('schema')
 
   // 模型导入导出
@@ -35,7 +35,7 @@ export default (): React.ReactNode => {
 
   // 获取 Schema 列表
   useEffect(() => {
-    ctx.mr.getSchemas(projectId)
+    ctx.mr.getSchemas(projectName)
   }, [])
 
   return (

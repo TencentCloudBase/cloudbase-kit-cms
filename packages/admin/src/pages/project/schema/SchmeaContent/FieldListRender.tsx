@@ -6,7 +6,7 @@ import { ExclamationCircleTwoTone, QuestionCircleTwoTone } from '@ant-design/ico
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
 import { updateSchemaFiled } from '@/services/schema'
 import { ContentCtx, SchmeaCtx } from 'typings/store'
-import { getProjectId, getSchemaCustomFields, getSchemaSystemFields } from '@/utils'
+import { getProjectName, getSchemaCustomFields, getSchemaSystemFields } from '@/utils'
 
 export interface FieldType {
   icon: React.ReactNode
@@ -23,7 +23,7 @@ export const SchemaFieldListRender: React.FC<{
 }> = (props) => {
   const { schema, actionRender, onFiledClick } = props
   const [sortLoading, setSortLoading] = useState(false)
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const ctx = useConcent<{}, SchmeaCtx>('schema')
   const contentCtx = useConcent<{}, ContentCtx>('content')
 
@@ -62,13 +62,13 @@ export const SchemaFieldListRender: React.FC<{
     schema.fields = resortedFields
     setSortLoading(true)
     const sysNames: string[] = SYSTEM_FIELDS.map((item) => item?.name || '')
-    await updateSchemaFiled(projectId, schema?.id, {
+    await updateSchemaFiled(projectName, schema?.collectionName, {
       fields: resortedFields?.filter((item) => !sysNames?.includes(item?.name)),
     })
 
     // 重新加载数据
-    ctx.mr.getSchemas(projectId)
-    contentCtx.mr.getContentSchemas(projectId)
+    ctx.mr.getSchemas(projectName)
+    contentCtx.mr.getContentSchemas(projectName)
     setSortLoading(false)
   }
 

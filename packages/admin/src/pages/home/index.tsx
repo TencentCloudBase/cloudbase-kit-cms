@@ -178,27 +178,29 @@ export const ProjectCreateModal: React.FC<{
       >
         <Form.Item
           label="项目名"
-          name="name"
-          rules={[{ required: true, message: '请输入项目名！' }]}
+          name="projectName"
+          rules={[
+            { required: true, message: '请输入项目名' },
+            {
+              pattern: /^[a-zA-Z0-9]{1,15}$/,
+              message: '项目名仅支持字母与数字，不大于 15 个字符',
+            },
+          ]}
         >
-          <Input showCount maxLength={15} placeholder="项目名，如官网" />
+          <Input
+            showCount
+            maxLength={15}
+            placeholder="项目名，如 website，仅支持字母与数字，不大于 15 个字符"
+          />
         </Form.Item>
 
-        {!IS_KIT_MODE && (
-          <Form.Item
-            label="项目 ID"
-            name="customId"
-            rules={[
-              { required: true, message: '请输入项目 ID！' },
-              {
-                pattern: /^[a-zA-Z0-9]{1,16}$/,
-                message: '项目 ID 仅支持字母与数字，不大于 16 个字符',
-              },
-            ]}
-          >
-            <Input placeholder="项目 ID，如 website，仅支持字母与数字，不大于 16 个字符" />
-          </Form.Item>
-        )}
+        <Form.Item
+          label="显示名"
+          name="displayName"
+          rules={[{ required: true, message: '请输入显示名！' }]}
+        >
+          <Input showCount maxLength={15} placeholder="显示名，如官网" />
+        </Form.Item>
 
         <Form.Item label="项目介绍" name="description">
           <Input showCount maxLength={30} placeholder="项目介绍，如官网内容管理" />

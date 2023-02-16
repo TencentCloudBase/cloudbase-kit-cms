@@ -7,7 +7,7 @@ import { PageContainer } from '@ant-design/pro-layout'
 import { Form, message, Space, Button, Row, Col, Typography, Modal, Image, Select } from 'antd'
 import { LeftCircleTwoTone } from '@ant-design/icons'
 
-import { generateQRCode, getDocInitialValues, getProjectId } from '@/utils'
+import { generateQRCode, getDocInitialValues, getProjectName } from '@/utils'
 import { getFieldFormItem } from '@/components/Fields'
 import { getLowCodeAppInfo } from '@/services/operation'
 import { createContent, updateContent } from '@/services/content'
@@ -20,7 +20,7 @@ const MessageTask: React.FC = () => {
   const isFromLowCode = window.TcbCmsConfig.fromLowCode
   const modalRef = useRef<any>(null)
   const [form] = Form.useForm()
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const ctx = useConcent('content')
 
   const { selectedContent, contentAction } = ctx.state
@@ -45,11 +45,16 @@ const MessageTask: React.FC = () => {
       }
 
       if (contentAction === 'create') {
-        await createContent(projectId, ActivitySchema?.collectionName, payload)
+        await createContent(projectName, ActivitySchema?.collectionName, payload)
       }
 
       if (contentAction === 'edit') {
-        await updateContent(projectId, ActivitySchema?.collectionName, selectedContent._id, payload)
+        await updateContent(
+          projectName,
+          ActivitySchema?.collectionName,
+          selectedContent._id,
+          payload
+        )
       }
     },
     {
@@ -68,7 +73,7 @@ const MessageTask: React.FC = () => {
   // 获取低码页面数据
   const { data: lowCodeApp = {} } = useRequest(async () => {
     if (!isFromLowCode) return
-    return getLowCodeAppInfo(projectId)
+    return getLowCodeAppInfo(projectName)
   })
 
   return (

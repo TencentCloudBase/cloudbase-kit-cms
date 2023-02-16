@@ -6,11 +6,11 @@ import ProTable, { ActionType } from '@ant-design/pro-table'
 import { getSmsTaskResult } from '@/services/operation'
 import ProCard from '@ant-design/pro-card'
 import { taskResultColumns } from './columns'
-import { getProjectId } from '@/utils'
+import { getProjectName } from '@/utils'
 
 export default (): React.ReactNode => {
   // 短信发送任务查询 ID
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const queryId = history.location.query?.queryId as string
 
   // 表格引用，重置、操作表格
@@ -26,7 +26,7 @@ export default (): React.ReactNode => {
       const { pageSize, current } = params
 
       try {
-        const { data = [], total } = await getSmsTaskResult(projectId, {
+        const { data = [], total } = await getSmsTaskResult(projectName, {
           queryId,
           pageSize,
           page: current,

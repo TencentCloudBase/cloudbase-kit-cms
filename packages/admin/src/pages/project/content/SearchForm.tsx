@@ -17,7 +17,7 @@ import {
 import { IDatePicker, IConnectEditor, IDateRangePicker } from '@/components/Fields'
 import { useConcent } from 'concent'
 import { ContentCtx } from 'typings/store'
-import { calculateFieldWidth, getProjectId } from '@/utils'
+import { calculateFieldWidth, getProjectName } from '@/utils'
 import { updateSchemaFiled } from '@/services/schema'
 import { useRequest } from 'umi'
 
@@ -37,7 +37,7 @@ const ContentTableSearchForm: React.FC<{
   onSearch: (v: Record<string, any>) => void
 }> = ({ schema, onSearch }) => {
   const [form] = Form.useForm()
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const ctx = useConcent<{}, ContentCtx>('content')
   const { searchFields, searchParams } = ctx.state
 
@@ -49,10 +49,10 @@ const ContentTableSearchForm: React.FC<{
   // 保存检索条件
   const { run: saveSearchFields, loading } = useRequest(
     async () => {
-      await updateSchemaFiled(projectId, schema.id, {
+      await updateSchemaFiled(projectName, schema.collectionName, {
         searchFields,
       })
-      ctx.mr.getContentSchemas(projectId)
+      ctx.mr.getContentSchemas(projectName)
     },
     {
       manual: true,
@@ -93,11 +93,11 @@ const ContentTableSearchForm: React.FC<{
                       },
                       onOk: async () => {
                         try {
-                          await updateSchemaFiled(projectId, schema.id, {
+                          await updateSchemaFiled(projectName, schema.collectionName, {
                             searchFields: [],
                           })
                           message.success('重置检索条件成功！')
-                          ctx.mr.getContentSchemas(projectId)
+                          ctx.mr.getContentSchemas(projectName)
                         } catch (error) {
                           message.error('重置检索条件失败！')
                         }

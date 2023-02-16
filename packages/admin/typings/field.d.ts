@@ -145,16 +145,16 @@ interface SchemaField {
  * 模型描述
  */
 interface Schema {
-  id: string
+  collectionName: string
 
   displayName: string
 
-  collectionName: string
+  collectionOldName: string
 
-  projectId: string
+  projectName: string
 
   // 在多个项目之间实现共享
-  projectIds: string[]
+  projectNames: string[]
 
   fields: SchemaField[]
 

@@ -4,7 +4,7 @@ import { PageContainer } from '@ant-design/pro-layout'
 import { Button, Modal, Tabs, message, Drawer } from 'antd'
 import ProTable, { ActionType, ProColumns } from '@ant-design/pro-table'
 import { getWebhooks, deleteWebhook } from '@/services/webhook'
-import { getProjectId } from '@/utils'
+import { getProjectName } from '@/utils'
 import { WebhookForm } from './WebhookForm'
 import WebhookExecLog from './WebhookExecLog'
 import { WebhookColumns } from './columns'
@@ -17,7 +17,7 @@ const columns: ProColumns<Webhook>[] = WebhookColumns.map((item) => ({
 }))
 
 export default (): React.ReactNode => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const [drawerVisible, setDrawerVisible] = useState(false)
   const [selectedWebhook, setSelectedWebhook] = useState<Webhook>()
   const [webhookAction, setWebhookAction] = useState<'create' | 'edit'>('create')
@@ -38,7 +38,7 @@ export default (): React.ReactNode => {
     const { current, pageSize } = params
 
     try {
-      const { data = [], total } = await getWebhooks(projectId, {
+      const { data = [], total } = await getWebhooks(projectName, {
         sort,
         filter,
         pageSize,
@@ -113,7 +113,7 @@ export default (): React.ReactNode => {
                           modal.destroy()
                         },
                         onOk: async () => {
-                          await deleteWebhook(projectId, {
+                          await deleteWebhook(projectName, {
                             filter: {
                               _id: row._id,
                             },

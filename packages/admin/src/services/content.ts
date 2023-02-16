@@ -22,27 +22,31 @@ export interface Options {
 }
 
 export async function getContentSchema(
-  projectId: string,
+  projectName: string,
   schemaId: string
 ): Promise<{ data: Schema }> {
-  return tcbRequest(`/projects/${projectId}/contents/${schemaId}`, {
+  return tcbRequest(`/projects/${projectName}/contents/${schemaId}`, {
     method: 'GET',
   })
 }
 
-export async function getContentSchemas(projectId: string) {
-  return tcbRequest(`/projects/${projectId}/collections`, {
+export async function getContentSchemas(projectName: string) {
+  return tcbRequest(`/projects/${projectName}/collections`, {
     method: 'GET',
   })
 }
 
-export async function getAllContents(projectId: string, collectionId: string, options?: Options) {
+export async function getAllContents(
+  projectName: string,
+  collectionName: string,
+  options?: Options
+) {
   if (!options) {
     // eslint-disable-next-line no-param-reassign
     options = {}
   }
   options.pageSize = 100 // 后端单次最大刷新数量为100
-  const firstRsp = await getContents(projectId, collectionId, { ...options, page: 1 })
+  const firstRsp = await getContents(projectName, collectionName, { ...options, page: 1 })
   if (firstRsp?.total > firstRsp?.data?.length) {
     const loopNum = Math.ceil(firstRsp.total / options.pageSize)
     const pageList: number[] = []
@@ -53,7 +57,7 @@ export async function getAllContents(projectId: string, collectionId: string, op
     }
 
     const rspList = await Promise.all(
-      pageList.map((page) => getContents(projectId, collectionId, { ...options, page }))
+      pageList.map((page) => getContents(projectName, collectionName, { ...options, page }))
     )
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < rspList.length; ++i) {
@@ -68,13 +72,13 @@ export async function getAllContents(projectId: string, collectionId: string, op
 }
 
 export async function getContents(
-  projectId: string,
-  collectionId: string,
+  projectName: string,
+  collectionName: string,
   options?: Options
 ): Promise<{ total: number; data: any[] }> {
   // 将老接口的参数进行缩减
   const { page = 1, pageSize = 10 } = options || {}
-  const res = await tcbRequest(`/projects/${projectId}/collections/${collectionId}/contents`, {
+  const res = await tcbRequest(`/projects/${projectName}/collections/${collectionName}/contents`, {
     method: 'GET',
     data: {
       limit: pageSize,
@@ -82,7 +86,7 @@ export async function getContents(
     },
     // data: {
     //   options,
-    //   resource: collectionId,
+    //   resource: collectionName,
     //   action: 'getMany',
     // },
   })
@@ -111,15 +115,15 @@ export function formatServiceContent(items: any[]) {
 }
 
 export async function createContent(
-  projectId: string,
-  collectionId: string,
+  projectName: string,
+  collectionName: string,
   payload: Record<string, any>
 ) {
-  return tcbRequest(`/projects/${projectId}/collections/${collectionId}/contents`, {
+  return tcbRequest(`/projects/${projectName}/collections/${collectionName}/contents`, {
     method: 'POST',
     data: payload,
     // data: {
-    //   resource: collectionId,
+    //   resource: collectionName,
     //   action: 'createOne',
     //   options: {
     //     payload,
@@ -128,11 +132,11 @@ export async function createContent(
   })
 }
 
-export async function deleteContent(projectId: string, collectionId: string, id: string) {
-  return tcbRequest(`/projects/${projectId}/collections/${collectionId}/contents/${id}`, {
+export async function deleteContent(projectName: string, collectionName: string, id: string) {
+  return tcbRequest(`/projects/${projectName}/collections/${collectionName}/contents/${id}`, {
     method: 'DELETE',
     // data: {
-    //   resource: collectionId,
+    //   resource: collectionName,
     //   options: {
     //     filter: {
     //       _id: id,
@@ -143,8 +147,12 @@ export async function deleteContent(projectId: string, collectionId: string, id:
   })
 }
 
-export async function batchDeleteContent(projectId: string, collectionId: string, ids: string[]) {
-  return tcbRequest(`/projects/${projectId}/collections/${collectionId}/contents`, {
+export async function batchDeleteContent(
+  projectName: string,
+  collectionName: string,
+  ids: string[]
+) {
+  return tcbRequest(`/projects/${projectName}/collections/${collectionName}/contents`, {
     method: 'DELETE',
     data: ids,
     // data: {
@@ -163,16 +171,16 @@ export async function batchDeleteContent(projectId: string, collectionId: string
  * 更新内容
  */
 export async function updateContent(
-  projectId: string,
-  collectionId: string,
+  projectName: string,
+  collectionName: string,
   id: string,
   payload: Record<string, any>
 ) {
-  return tcbRequest(`/projects/${projectId}/collections/${collectionId}/contents/${id}`, {
+  return tcbRequest(`/projects/${projectName}/collections/${collectionName}/contents/${id}`, {
     method: 'PATCH',
     data: payload,
     // data: {
-    //   resource: collectionId,
+    //   resource: collectionName,
     //   options: {
     //     payload,
     //     filter: {
@@ -184,8 +192,8 @@ export async function updateContent(
   })
 }
 
-export async function getMigrateJobs(projectId: string, page = 1, pageSize = 10) {
-  return tcbRequest(`/projects/${projectId}/migrate`, {
+export async function getMigrateJobs(projectName: string, page = 1, pageSize = 10) {
+  return tcbRequest(`/projects/${projectName}/migrate`, {
     method: 'GET',
     params: {
       page,
@@ -198,7 +206,7 @@ export async function getMigrateJobs(projectId: string, page = 1, pageSize = 10)
  * 创建导入任务
  */
 export async function createImportMigrateJob(
-  projectId: string,
+  projectName: string,
   data: {
     fileID: string
     filePath: string
@@ -207,7 +215,7 @@ export async function createImportMigrateJob(
     conflictMode: string
   }
 ) {
-  return tcbRequest(`/projects/${projectId}/migrate`, {
+  return tcbRequest(`/projects/${projectName}/migrate`, {
     data,
     method: 'POST',
   })
@@ -217,13 +225,13 @@ export async function createImportMigrateJob(
  * 创建导出任务
  */
 export async function createExportMigrateJob(
-  projectId: string,
+  projectName: string,
   data: {
     fileType: string
     collectionName: string
   }
 ) {
-  return tcbRequest(`/projects/${projectId}/migrate/export`, {
+  return tcbRequest(`/projects/${projectName}/migrate/export`, {
     data,
     method: 'POST',
   })
@@ -232,8 +240,8 @@ export async function createExportMigrateJob(
 /**
  * 请求解析 JSON Lines 文件
  */
-export async function parseJsonLinesFile(projectId: string, fileUrl: string) {
-  return tcbRequest(`/projects/${projectId}/migrate/parseJsonLinesFile`, {
+export async function parseJsonLinesFile(projectName: string, fileUrl: string) {
+  return tcbRequest(`/projects/${projectName}/migrate/parseJsonLinesFile`, {
     method: 'POST',
     data: {
       fileUrl,

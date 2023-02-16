@@ -51,7 +51,7 @@ export default {
       }
     },
     async getContentSchemas(
-      projectId: string,
+      projectName: string,
       state: any,
       ctx: IActionCtx
     ): Promise<{ schemas: Schema[]; loading: boolean }> {
@@ -60,7 +60,7 @@ export default {
       })
 
       try {
-        const { data } = await getContentSchemas(projectId)
+        const { data } = await getContentSchemas(projectName)
 
         return {
           schemas: data,

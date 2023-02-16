@@ -69,15 +69,15 @@ export default function ProjectListView({
             })
 
             redirectTo('home', {
-              projectId: _.id,
+              projectName: _.projectName,
             })
           }}
         >
           <div className="w-2/4 flex items-center">
-            <ItemIcon>{_.name.slice(0, 1)}</ItemIcon>
-            <Tooltip title={_.name}>
+            <ItemIcon>{_.displayName.slice(0, 1)}</ItemIcon>
+            <Tooltip title={_.displayName}>
               <Title level={5} ellipsis className="ml-5 mb-0" style={{ maxWidth: '80%' }}>
-                {_.name}
+                {_.displayName}
               </Title>
             </Tooltip>
           </div>

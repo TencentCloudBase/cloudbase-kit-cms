@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { Modal, message } from 'antd'
 import { ContentCtx, SchmeaCtx } from 'typings/store'
 import { deleteSchemaFiled, updateSchemaFiled } from '@/services/schema'
-import { getProjectId } from '@/utils'
+import { getProjectName } from '@/utils'
 import { IS_KIT_MODE } from '@/kitConstants'
 
 /**
@@ -13,7 +13,7 @@ export const SchemaFieldDeleteModal: React.FC<{
   visible: boolean
   onClose: () => void
 }> = ({ visible, onClose }) => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const ctx = useConcent<{}, SchmeaCtx>('schema')
   const contentCtx = useConcent<{}, ContentCtx>('content')
   const [loading, setLoading] = useState(false)
@@ -44,16 +44,16 @@ export const SchemaFieldDeleteModal: React.FC<{
 
         try {
           if (IS_KIT_MODE) {
-            await deleteSchemaFiled(projectId, currentSchema?.id, selectedField.id)
+            await deleteSchemaFiled(projectName, currentSchema?.collectionName, selectedField.id)
           } else {
-            await updateSchemaFiled(projectId, currentSchema?.id, {
+            await updateSchemaFiled(projectName, currentSchema?.collectionName, {
               fields,
             })
           }
           currentSchema.fields.splice(index, 1)
           message.success('删除字段成功')
-          ctx.mr.getSchemas(projectId)
-          contentCtx.mr.getContentSchemas(projectId)
+          ctx.mr.getSchemas(projectName)
+          contentCtx.mr.getContentSchemas(projectName)
         } catch (error) {
           message.error('删除字段失败')
         } finally {

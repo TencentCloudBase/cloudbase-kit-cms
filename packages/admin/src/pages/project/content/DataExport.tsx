@@ -2,7 +2,7 @@ import { useRequest } from 'umi'
 import React, { useState, useMemo } from 'react'
 import { createExportMigrateJob, getContents } from '@/services/content'
 import { Menu, Modal, Button, Dropdown, Alert, message } from 'antd'
-import { getProjectId, redirectTo } from '@/utils'
+import { getProjectName, redirectTo } from '@/utils'
 import { exportData, formatSearchParams } from './tool'
 
 type ExportFileType = 'csv' | 'json'
@@ -15,7 +15,7 @@ const DataExport: React.FC<{ schema: Schema; collectionName: string; searchParam
   searchParams = {},
   collectionName,
 }) => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const searchKeys = Object.keys(searchParams)
   const [visible, setVisible] = useState(false)
   const [fileType, setFileType] = useState<ExportFileType>('json')
@@ -29,7 +29,7 @@ const DataExport: React.FC<{ schema: Schema; collectionName: string; searchParam
     async () => {
       // 存在搜索条件时，只导出搜索结果，最大 1000 条
       if (searchKeys?.length) {
-        const { data } = await getContents(projectId, collectionName, {
+        const { data } = await getContents(projectName, collectionName, {
           page: 1,
           fuzzyFilter,
           pageSize: 1000,
@@ -38,7 +38,7 @@ const DataExport: React.FC<{ schema: Schema; collectionName: string; searchParam
         await exportData(data, fileType)
       } else {
         // 导出全量数据
-        await createExportMigrateJob(projectId, {
+        await createExportMigrateJob(projectName, {
           fileType,
           collectionName,
         })

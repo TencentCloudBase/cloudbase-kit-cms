@@ -1,75 +1,75 @@
 import { IS_KIT_MODE } from '@/kitConstants'
 import { tcbRequest } from '@/utils'
 
-export async function getSchemas(projectId?: string): Promise<{ data: Schema[] }> {
+export async function getSchemas(projectName?: string): Promise<{ data: Schema[] }> {
   if (IS_KIT_MODE) {
-    return tcbRequest(`/projects/${projectId}/collections`, {
+    return tcbRequest(`/projects/${projectName}/collections`, {
       method: 'GET',
     })
   }
-  return tcbRequest(`/projects/${projectId}/schemas`, {
+  return tcbRequest(`/projects/${projectName}/schemas`, {
     method: 'GET',
   })
 }
 
 export async function updateSchemaAndCollection(
-  projectId: string,
-  collectionId: string,
+  projectName: string,
+  collectionName: string,
   options?: Partial<Schema>
 ) {
-  return tcbRequest(`/projects/${projectId}/collections/${collectionId}`, {
+  return tcbRequest(`/projects/${projectName}/collections/${collectionName}`, {
     method: 'PATCH',
     data: options,
   })
 }
 
-export async function deleteSchemaAndCollection(projectId: string, collectionId: string) {
-  return tcbRequest(`/projects/${projectId}/collections/${collectionId}`, {
+export async function deleteSchemaAndCollection(projectName: string, collectionName: string) {
+  return tcbRequest(`/projects/${projectName}/collections/${collectionName}`, {
     method: 'DELETE',
   })
 }
 
-/** 根据collectionId获取对应的schema信息 */
+/** 根据collectionName获取对应的schema信息 */
 export async function getSchemaFileds(
-  projectId: string,
-  collectionId: string
+  projectName: string,
+  collectionName: string
 ): Promise<{ data: SchemaField[] }> {
-  return tcbRequest(`/projects/${projectId}/collections/${collectionId}/schemas`, {
+  return tcbRequest(`/projects/${projectName}/collections/${collectionName}/schemas`, {
     method: 'GET',
   })
 }
 
 export async function getSchemaFiled(
-  projectId: string,
-  collectionId: string,
+  projectName: string,
+  collectionName: string,
   schemaId: string
 ): Promise<{ data: Schema }> {
-  return tcbRequest(`/projects/${projectId}/collections/${collectionId}/schemas/${schemaId}`, {
+  return tcbRequest(`/projects/${projectName}/collections/${collectionName}/schemas/${schemaId}`, {
     method: 'GET',
   })
 }
 
-export async function createSchema(projectId: string, schema: Partial<Schema>) {
-  return tcbRequest(`/projects/${projectId}/collections`, {
+export async function createSchema(projectName: string, schema: Partial<Schema>) {
+  return tcbRequest(`/projects/${projectName}/collections`, {
     method: 'POST',
     data: schema,
   })
 }
 
 export async function createSchemaFiled(
-  projectId: string,
-  collectionId: string,
+  projectName: string,
+  collectionName: string,
   field: SchemaField
 ) {
-  return tcbRequest(`/projects/${projectId}/collections/${collectionId}/schemas`, {
+  return tcbRequest(`/projects/${projectName}/collections/${collectionName}/schemas`, {
     method: 'POST',
     data: field,
   })
 }
 
 export async function updateSchemaFiled(
-  projectId: string,
-  collectionId: string,
+  projectName: string,
+  collectionName: string,
   schema: Partial<Schema>
 ) {
   if (schema?.searchFields) {
@@ -80,25 +80,25 @@ export async function updateSchemaFiled(
   }
   return Promise.all(
     schema.fields.map((item) =>
-      tcbRequest(`/projects/${projectId}/collections/${collectionId}/schemas/${item.id}`, {
+      tcbRequest(`/projects/${projectName}/collections/${collectionName}/schemas/${item.id}`, {
         method: 'PATCH',
         data: { ...item, id: undefined },
       })
     )
   )
 
-  // return tcbRequest(`/projects/${projectId}/collections/${collectionId}/schemas`, {
+  // return tcbRequest(`/projects/${projectName}/collections/${collectionName}/schemas`, {
   //   method: 'PATCH',
   //   data: schema,
   // })
 }
 
 export async function deleteSchema(
-  projectId: string,
-  collectionId: string,
+  projectName: string,
+  collectionName: string,
   deleteCollection: boolean
 ) {
-  return tcbRequest(`/projects/${projectId}/collections/${collectionId}/schemas`, {
+  return tcbRequest(`/projects/${projectName}/collections/${collectionName}/schemas`, {
     method: 'DELETE',
     data: {
       deleteCollection,
@@ -106,8 +106,12 @@ export async function deleteSchema(
   })
 }
 
-export async function deleteSchemaFiled(projectId: string, collectionId: string, schemaId: string) {
-  return tcbRequest(`/projects/${projectId}/collections/${collectionId}/schemas/${schemaId}`, {
+export async function deleteSchemaFiled(
+  projectName: string,
+  collectionName: string,
+  schemaId: string
+) {
+  return tcbRequest(`/projects/${projectName}/collections/${collectionName}/schemas/${schemaId}`, {
     method: 'DELETE',
   })
 }

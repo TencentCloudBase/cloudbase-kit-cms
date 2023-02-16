@@ -20,22 +20,24 @@ const HeaderTitle: React.FC<{ collapsed: boolean }> = (props) => {
   })
 
   const title =
-    currentProject?.name || projects.find((_) => _.id === pid)?.name || getCmsConfig('cmsTitle')
+    currentProject?.displayName ||
+    projects.find((_) => _.projectName === pid)?.displayName ||
+    getCmsConfig('cmsTitle')
 
   const menu = (
     <Menu
       onClick={({ key }) => {
-        const project = projects.find((_) => _.id === key)
+        const project = projects.find((_) => _.projectName === key)
         ctx.setState({
           currentProject: project,
         })
         redirectTo('home', {
-          projectId: key as string,
+          projectName: key as string,
         })
       }}
     >
       {projects.map((_) => (
-        <Menu.Item key={_.id}>{_.name}</Menu.Item>
+        <Menu.Item key={_.projectName}>{_.displayName}</Menu.Item>
       ))}
     </Menu>
   )

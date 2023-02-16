@@ -13,7 +13,7 @@ import {
 } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 import { createImportMigrateJob } from '@/services/content'
-import { getProjectId, random, redirectTo, uploadFile } from '@/utils'
+import { getProjectName, random, redirectTo, uploadFile } from '@/utils'
 
 const { Dragger } = Upload
 const { Title } = Typography
@@ -23,7 +23,7 @@ const { Option } = Select
  * 导入数据
  */
 const DataImport: React.FC<{ collectionName: string }> = ({ collectionName }) => {
-  const projectId = getProjectId()
+  const projectName = getProjectName()
   const [visible, setVisible] = useState(false)
   const [percent, setPercent] = useState(0)
   const [uploading, setUploading] = useState(false)
@@ -108,7 +108,7 @@ const DataImport: React.FC<{ collectionName: string }> = ({ collectionName }) =>
               },
             })
               .then(({ fileId }) =>
-                createImportMigrateJob(projectId, {
+                createImportMigrateJob(projectName, {
                   fileID: fileId,
                   filePath,
                   conflictMode,

@@ -12,6 +12,7 @@ import { templateCompile } from './templateCompile'
 import { CloudbaseOAuth } from '@cloudbase/oauth'
 import cloudbase from '@tencent/cloudbase-paas-js-sdk/src'
 import { IS_CUSTOM_ENV, IS_KIT_MODE } from '@/kitConstants'
+import { getInitialState } from '@/app'
 
 interface IntegrationRes {
   statusCode: number
@@ -222,6 +223,7 @@ export async function tcbRequest<T = any>(
     const reqParam = reqParamFormat(url, { ...(options || {}) })
     let result: any
     if (IS_CUSTOM_ENV) {
+      await getInitialState()
       result = await cloudbase.kits().request({
         url: `/cms/${kitId}/v1${reqParam.pureUrl}`,
         method: reqParam.method as any,
