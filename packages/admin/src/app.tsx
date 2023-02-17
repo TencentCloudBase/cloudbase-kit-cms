@@ -256,7 +256,7 @@ setApiErrorHandler((result?: any, url?: string) => {
   const resultJson = typeof result === 'string' ? result : JSON.stringify(result)
   notification.error({
     message: '请求错误',
-    description: `服务异常：${result?.status || '--'}: ${url}`,
+    description: `服务异常：${result?.message || '--'}: ${url}`,
     btn: (
       <Button type="link" onClick={() => result && copyToClipboard(resultJson)}>
         复制详情

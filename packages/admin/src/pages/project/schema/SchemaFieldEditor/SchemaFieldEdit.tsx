@@ -72,7 +72,7 @@ export const SchemaFieldEditorModal: React.FC<{
         sameNameField &&
         (fieldAction === 'create' ||
           (fieldAction === 'edit' &&
-            sameNameField.id !== fieldAttr.id &&
+            sameNameField._id !== fieldAttr._id &&
             sameNameFieldIndex !== selectedFieldIndex))
       ) {
         throw new Error(`已存在同名字段 ${fieldAttr.name}，请勿重复创建`)
@@ -117,7 +117,7 @@ export const SchemaFieldEditorModal: React.FC<{
       // 编辑字段
       if (fieldAction === 'edit') {
         const index = fields.findIndex(
-          (_: any) => _.id === selectedField?.id || _.name === selectedField?.name
+          (_: any) => _.id === selectedField?._id || _.name === selectedField?.name
         )
 
         const fieldData = {
@@ -193,7 +193,7 @@ export const SchemaFieldEditorModal: React.FC<{
       const projectName = getProjectName()
       const curId = connectSchema.collectionName
       getSchemaFileds(projectName, connectSchema.collectionName).then((res) => {
-        const fields = res.data.map((item) => ({ ...item?.['schema'], id: item.id }))
+        const fields = res?.data || []
         if (curId === connectSchema.collectionName) {
           setConnectSchema({ ...connectSchema, fields })
         }

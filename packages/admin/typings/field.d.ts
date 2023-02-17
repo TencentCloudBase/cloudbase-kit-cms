@@ -56,7 +56,7 @@ type SchemaFieldType =
  */
 interface SchemaField {
   // 32 位 Id，需要手动生成
-  id: string
+  _id: string
 
   // 字段类型
   type: SchemaFieldType

@@ -36,7 +36,7 @@ const ContentEditor: React.FC = () => {
     if (IS_KIT_MODE && !!schema?.collectionName && !schema?.fields) {
       const projectName = getProjectName()
       getSchemaFileds(projectName, schema.collectionName).then((res) => {
-        const fields = res.data.map((item) => ({ ...item?.['schema'], id: item.id }))
+        const fields = res?.data || []
         const schemaIndex = (schemas as Schema[])?.findIndex(
           (item) => item.collectionName === schemaId
         )

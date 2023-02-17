@@ -90,28 +90,7 @@ export async function getContents(
     //   action: 'getMany',
     // },
   })
-  const datas = formatServiceContent(res?.data)
-  // return contents;
-
-  // const newRes={...res,data:datas};
-  // console.error("getContents::",res,newRes)
-  return { ...res, data: datas }
-}
-
-export function formatServiceContent(items: any[]) {
-  if (!items?.length) {
-    return items
-  }
-  return items.map((item: { content?: any }) =>
-    item?.content
-      ? {
-          _id: item?.['id'],
-          _createTime: item?.['createTime'],
-          _updateTime: item?.['updateTime'],
-          ...item.content,
-        }
-      : item
-  )
+  return res
 }
 
 export async function createContent(

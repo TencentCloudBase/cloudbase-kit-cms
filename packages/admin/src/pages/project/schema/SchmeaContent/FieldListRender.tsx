@@ -1,7 +1,7 @@
 import { useConcent } from 'concent'
 import React, { useMemo, useState } from 'react'
 import { FieldTypes, SYSTEM_FIELDS } from '@/common'
-import { Card, Space, Typography, Tooltip, Switch, Tag, Spin } from 'antd'
+import { Card, Space, Typography, Tooltip, Switch, Tag, Spin, message } from 'antd'
 import { ExclamationCircleTwoTone, QuestionCircleTwoTone } from '@ant-design/icons'
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
 import { updateSchemaFiled } from '@/services/schema'
@@ -84,7 +84,7 @@ export const SchemaFieldListRender: React.FC<{
                   const type = FieldTypes.find((_) => _.type === field.type)
 
                   return (
-                    <Draggable key={field.id} draggableId={field.id} index={index}>
+                    <Draggable key={field._id} draggableId={field._id} index={index}>
                       {(draggableProvided) => (
                         <div
                           className="schema-field-card"
@@ -159,7 +159,10 @@ export const SchemaSystemField: React.FC<{ onFiledClick: Function; schema: Schem
                 hoverable
                 key={index}
                 className="schema-field-card system-field"
-                onClick={() => onFiledClick(field)}
+                onClick={() => {
+                  message.warning('系统字段暂不支持编辑')
+                  false && onFiledClick(field)
+                }}
               >
                 <Space style={{ flex: '1 1 auto' }}>
                   <div className="icon">{type?.icon}</div>

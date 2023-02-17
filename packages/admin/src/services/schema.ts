@@ -34,9 +34,11 @@ export async function getSchemaFileds(
   projectName: string,
   collectionName: string
 ): Promise<{ data: SchemaField[] }> {
-  return tcbRequest(`/projects/${projectName}/collections/${collectionName}/schemas`, {
+  const rsp = await tcbRequest(`/projects/${projectName}/collections/${collectionName}/schemas`, {
     method: 'GET',
   })
+  // rsp.data=(rsp?.data||[]).map((item:any)=>({...item?.['schema'],_id:item.id}))
+  return rsp
 }
 
 export async function getSchemaFiled(
@@ -80,9 +82,9 @@ export async function updateSchemaFiled(
   }
   return Promise.all(
     schema.fields.map((item) =>
-      tcbRequest(`/projects/${projectName}/collections/${collectionName}/schemas/${item.id}`, {
+      tcbRequest(`/projects/${projectName}/collections/${collectionName}/schemas/${item._id}`, {
         method: 'PATCH',
-        data: { ...item, id: undefined },
+        data: { ...item, _id: undefined, name: undefined },
       })
     )
   )

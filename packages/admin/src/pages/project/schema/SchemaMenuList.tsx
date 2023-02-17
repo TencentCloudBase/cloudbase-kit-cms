@@ -36,7 +36,7 @@ const SchemaMenuList: React.FC = () => {
           ctx.setState({
             currentSchema: {
               ...currentSchema,
-              fields: res.data.map((item) => ({ ...item?.['schema'], id: item.id })),
+              fields: res?.data || [],
             },
           })
       })

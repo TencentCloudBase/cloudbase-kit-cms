@@ -36,7 +36,7 @@ export default (): React.ReactNode => {
       getSchemaFileds(projectName, currentSchema.collectionName).then((res) => {
         const newSchema = {
           ...currentSchema,
-          fields: res.data.map((item) => ({ ...item?.['schema'], id: item.id })),
+          fields: res?.data || [],
         }
         const schemaIndex = schemas.findIndex(
           (item) => item.collectionName === currentSchema.collectionName

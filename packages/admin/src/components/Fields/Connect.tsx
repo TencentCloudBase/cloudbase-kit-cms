@@ -2,13 +2,7 @@ import React, { useState } from 'react'
 import { Typography, message, Tag, Select, Spin } from 'antd'
 import { useRequest } from 'umi'
 import { useConcent } from 'concent'
-import {
-  getContentSchema,
-  getContents,
-  Options,
-  formatServiceContent,
-  getAllContents,
-} from '@/services/content'
+import { getContentSchema, getContents, Options, getAllContents } from '@/services/content'
 import { calculateFieldWidth, getProjectName, getValueOrSlug } from '@/utils'
 import { ContentCtx } from 'typings/store'
 import { IS_KIT_MODE } from '@/kitConstants'
@@ -42,19 +36,17 @@ export const IConnectRender: React.FC<{
 
   if (!value || typeof value === 'string' || typeof value?.[0] === 'string') return <span>-</span>
 
-  const formatValue: IConnectValue = formatServiceContent([value])[0]
-
   if (!connectMany) {
     return (
       <Text ellipsis style={{ width }}>
-        {getConnectFieldDisplayText(formatValue, schemas, field)}
+        {getConnectFieldDisplayText(value, schemas, field)}
       </Text>
     )
   }
 
   return (
     <Paragraph style={{ width }}>
-      {formatServiceContent(value as any)
+      {value
         ?.filter((_: any) => _)
         ?.map((record: any, index: number) => (
           <Tag key={index}>{getConnectFieldDisplayText(record, schemas, field)}</Tag>

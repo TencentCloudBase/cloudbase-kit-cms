@@ -35,7 +35,7 @@ export const SchemaFieldDeleteModal: React.FC<{
         setLoading(true)
         const fields = (currentSchema.fields || []).slice()
         const index = fields.findIndex(
-          (_: any) => _.id === selectedField.id || _.name === selectedField.name
+          (_: any) => _.id === selectedField._id || _.name === selectedField.name
         )
 
         if (index > -1) {
@@ -44,7 +44,7 @@ export const SchemaFieldDeleteModal: React.FC<{
 
         try {
           if (IS_KIT_MODE) {
-            await deleteSchemaFiled(projectName, currentSchema?.collectionName, selectedField.id)
+            await deleteSchemaFiled(projectName, currentSchema?.collectionName, selectedField._id)
           } else {
             await updateSchemaFiled(projectName, currentSchema?.collectionName, {
               fields,
