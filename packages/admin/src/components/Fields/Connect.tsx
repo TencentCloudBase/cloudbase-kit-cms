@@ -126,7 +126,9 @@ export const IConnectEditor: React.FC<{
       : oriV
   }
   const connectIds = transformConnectValues(
-    connectMany ? (value as IConnectMultiValue).map((v) => valueFomat(v)) : valueFomat(value),
+    connectMany
+      ? ((value || []) as IConnectMultiValue)?.filter((v) => !!v)?.map((v) => valueFomat(v))
+      : valueFomat(value),
     connectMany
   )
   // const connectIds = transformConnectValues(value, connectMany)
@@ -155,7 +157,7 @@ export const IConnectEditor: React.FC<{
         </Option>
       ) : docs?.length ? (
         <>
-          <Option value="">空</Option>
+          {/* <Option value="">空</Option> */}
           {docs?.map((doc) => (
             <Option value={doc._id} key={doc._id}>
               {getConnectFieldDisplayText(doc, schemas, field)}

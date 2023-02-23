@@ -2636,10 +2636,10 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@tencent/cloudbase-paas-js-sdk@^1.8.3":
-  version "1.8.3"
-  resolved "http://r.tnpm.oa.com/@tencent/cloudbase-paas-js-sdk/-/@tencent/cloudbase-paas-js-sdk-1.8.3.tgz#c1d881328693fa3c42f4cc02fb7d570daf2a8d0e"
-  integrity sha512-8srmM06yfqQV/0q+CVEqMZozalkAT4slj6DmVvaoRykTv/vY6AQq/m3EiGd5JWq167EqkFTCoNqZfYWpvfQKFA==
+"@tencent/cloudbase-paas-js-sdk@^1.8.4":
+  version "1.8.4"
+  resolved "http://r.tnpm.oa.com/@tencent/cloudbase-paas-js-sdk/-/@tencent/cloudbase-paas-js-sdk-1.8.4.tgz#cda7d4930870733c8c8e5aff973b17c7076c08ba"
+  integrity sha512-zp4aUHWCI6UWOG7jPxg/V4HTrmUfyUq4s8IIrdEwndgRzYy4FRc6XIMP3g2EVJT26VkrHl+e6bw6QjOCkzNMrg==
   dependencies:
     "@cloudbase/oauth" "^2.5.6-beta.1"
 

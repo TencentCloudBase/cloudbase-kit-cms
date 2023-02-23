@@ -13,6 +13,8 @@ import { CloudbaseOAuth } from '@cloudbase/oauth'
 import cloudbase from '@tencent/cloudbase-paas-js-sdk/src'
 import { IS_CUSTOM_ENV, IS_KIT_MODE } from '@/kitConstants'
 import { getInitialState } from '@/app'
+import { ApiUrls } from '@cloudbase/oauth/src/auth/consts'
+import { appendCaptchaTokenToURL } from '@/pages/login/captcha'
 
 interface IntegrationRes {
   statusCode: number
@@ -123,7 +125,41 @@ function initCloudBaseApp() {
  * @param username
  * @param password
  */
-export async function loginWithPassword(username: string, password: string) {
+export async function loginWithPassword(
+  username: string,
+  password: string,
+  captcha_token?: string
+) {
+  // 需要输入验证码的情况，如短时间内连续多次输入密码
+  if (captcha_token) {
+    const { envId, region, clientId } = window.TcbCmsConfig || {}
+    const apiOrigin =
+      IS_KIT_MODE && !IS_CUSTOM_ENV
+        ? `https://${envId}.${region}.tcb-api.tencentcloudapi.com`
+        : `https://${envId}.${region}.auth.tcloudbase.com`
+    const tempAuth = new CloudbaseOAuth({
+      apiOrigin,
+      clientId: IS_CUSTOM_ENV ? clientId : envId, // 环境 ID
+      request: async function (url, options) {
+        const pureUrl = url.split('?')[0]
+        if (pureUrl === `${apiOrigin}${ApiUrls.AUTH_SIGN_IN_URL}`) {
+          // eslint-disable-next-line no-param-reassign
+          url = appendCaptchaTokenToURL(url, options?.body?.captcha_token)
+          delete options?.body?.captcha_token
+        }
+        const res = await fetch(url, {
+          method: options?.method || 'POST',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          headers: options?.headers as any,
+          body: JSON.stringify(options?.body),
+        })
+        return await res.json()
+      },
+    })
+    await tempAuth.authApi.signIn({ username, password, captcha_token } as any)
+    location.href = location.origin + location.pathname
+    return new Promise((resolve, reject) => {})
+  }
   // 登陆
   // await auth.signInWithUsernameAndPassword(username, password)
   return auth.authApi.signIn({ username, password })
@@ -134,6 +170,11 @@ export async function loginWithPassword(username: string, password: string) {
  * 获取当前登录态信息
  */
 export async function getLoginState() {
+  // sdk内部bug，缓存中的token判定有点问题，我们这里加一步来在业务侧修正这个问题（该函数内会判定token有效期）
+  try {
+    await auth.oauth2client.getAccessToken()
+  } catch (e) {}
+
   // 获取登录态
   return auth.authApi.getLoginState()
 }
