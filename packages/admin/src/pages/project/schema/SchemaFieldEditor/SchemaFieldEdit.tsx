@@ -273,8 +273,8 @@ export const SchemaFieldEditorModal: React.FC<{
           rules={[
             { required: true, message: '请输入数据库名称！' },
             {
-              message: '字段名只能使用英文字母、数字、- 等符号',
-              pattern: /^[a-z0-9A-Z-]+$/,
+              message: '字段名只能使用英文字母、数字、-、_ 等符号',
+              pattern: /^[a-z0-9A-Z-][a-z0-9A-Z-_]*$/,
             },
           ]}
         >
