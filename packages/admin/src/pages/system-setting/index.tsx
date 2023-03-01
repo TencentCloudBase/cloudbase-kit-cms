@@ -48,7 +48,7 @@ export default (): React.ReactNode => {
         </Title>
         <Link
           className="text-base"
-          href="https://docs.cloudbase.net/cms/intro.html"
+          href="https://docs.cloudbase.net/headless-cms/intro"
           target="_blank"
         >
           使用文档

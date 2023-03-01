@@ -18,7 +18,7 @@
     </a>
     <br />
     <br />
-    <a href="https://docs.cloudbase.net/cms/intro.html" target="_blank">文档</a>
+    <a href="https://docs.cloudbase.net/headless-cms/intro" target="_blank">文档</a>
     ·
     <a href="https://github.com/TencentCloudBase/cloudbase-extension-cms/issues">报告 Bug</a>
     ·

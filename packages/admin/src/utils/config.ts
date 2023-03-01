@@ -2,7 +2,7 @@ const InnerDefaultValue: Partial<ITcbCmsConfing> = {
   appName: 'CloudBase',
   cmsTitle: 'CloudBase CMS',
   cmsLogo: './icon.svg',
-  cmsDocLink: 'https://docs.cloudbase.net/cms/intro',
+  cmsDocLink: 'https://docs.cloudbase.net/headless-cms/intro',
   cmsHelpLink: 'https://support.qq.com/products/148793',
   officialSiteLink: 'https://cloudbase.net',
 }

@@ -117,3 +117,49 @@ export async function deleteSchemaFiled(
     method: 'DELETE',
   })
 }
+
+/** 获取模板批量导出数据 */
+export async function getExportSchemasData(
+  projectName: string,
+  collections: string[]
+): Promise<Schema[]> {
+  return tcbRequest(`/projects/${projectName}/collections/export`, {
+    method: 'POST',
+    data: collections,
+  })
+}
+
+/** 获取模板批量导出数据 */
+export async function importSchemasData(projectName: string, schemas: Partial<Schema>[]) {
+  const sysReg = /^_/
+  const pureSchemas = schemas.map((schemaItem) => {
+    const pureSchema = { ...schemaItem }
+    const sysSchemaKeys = Object.keys(pureSchema)
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    for (let i = 0; i < sysSchemaKeys.length; ++i) {
+      const key = sysSchemaKeys[i]
+      if (sysReg.test(key)) {
+        delete pureSchema[key] // 去除系统字段
+      }
+    }
+    pureSchema.fields = (pureSchema?.fields || [])
+      .filter((fieldItem) => !fieldItem.isSystem)
+      .map((fieldItem) => {
+        const pureField = { ...fieldItem }
+        const sysFieldKeys = Object.keys(pureField)
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of
+        for (let j = 0; j < sysFieldKeys.length; ++j) {
+          const key = sysFieldKeys[j]
+          if (sysReg.test(key) || key === 'id') {
+            delete pureField[key]
+          }
+        }
+        return pureField
+      })
+    return pureSchema
+  })
+  return tcbRequest(`/projects/${projectName}/collections/import`, {
+    method: 'POST',
+    data: pureSchemas,
+  })
+}
