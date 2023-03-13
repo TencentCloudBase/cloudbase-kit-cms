@@ -12,8 +12,49 @@ import {
   Typography,
 } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
-import { createImportMigrateJob } from '@/services/content'
+import { contentBatchImport, createImportMigrateJob } from '@/services/content'
 import { getProjectName, random, redirectTo, uploadFile } from '@/utils'
+import { IS_KIT_MODE } from '@/kitConstants'
+
+/** 文件加载 */
+async function loadFile(
+  file: File,
+  progressCb?: (file: File, progress: number) => void
+): Promise<any> {
+  return new Promise((resolve, reject) => {
+    // 加载进度回调
+    const onProgress = (evt: ProgressEvent) => {
+      if (progressCb) {
+        progressCb(file, evt.loaded / evt.total)
+      }
+    }
+
+    // 加载成功回调
+    const onLoad = (evt: ProgressEvent) => {
+      let result: string
+      try {
+        result = JSON.parse(reader?.result as string)
+      } catch (e) {
+        result = reader.result as string
+      }
+      resolve(result)
+    }
+
+    // 加载错误回调
+    const onError = (evt: ProgressEvent) => {
+      reject(null)
+    }
+
+    // 执行加载
+    const reader = new FileReader()
+    reader.onprogress = onProgress
+    reader.onload = onLoad
+    reader.onerror = onError
+
+    // 执行加载
+    reader.readAsText(file, undefined)
+  })
+}
 
 const { Dragger } = Upload
 const { Title } = Typography
@@ -22,7 +63,10 @@ const { Option } = Select
 /**
  * 导入数据
  */
-const DataImport: React.FC<{ collectionName: string }> = ({ collectionName }) => {
+const DataImport: React.FC<{ collectionName: string; onSuccess?: () => any }> = ({
+  collectionName,
+  onSuccess,
+}) => {
   const projectName = getProjectName()
   const [visible, setVisible] = useState(false)
   const [percent, setPercent] = useState(0)
@@ -53,10 +97,10 @@ const DataImport: React.FC<{ collectionName: string }> = ({ collectionName }) =>
               setDataType(key as string)
             }}
           >
-            <Menu.Item key="csv">通过 CSV 导入</Menu.Item>
+            {!IS_KIT_MODE && <Menu.Item key="csv">通过 CSV 导入</Menu.Item>}
             <Menu.Item key="json">通过 JSON 导入</Menu.Item>
-            <Menu.Item key="jsonlines">通过 JSON Lines 导入</Menu.Item>
-            <Menu.Item key="record">查看导入记录</Menu.Item>
+            {/* <Menu.Item key="jsonlines">通过 JSON Lines 导入</Menu.Item> */}
+            {!IS_KIT_MODE && <Menu.Item key="record">查看导入记录</Menu.Item>}
           </Menu>
         }
         key="search"
@@ -97,33 +141,51 @@ const DataImport: React.FC<{ collectionName: string }> = ({ collectionName }) =>
           beforeUpload={(file) => {
             setUploading(true)
             setPercent(0)
-            // 文件路径
-            const filePath = `cloudbase-cms/data-import/${random(32)}-${file.name}`
-            // 上传文件
-            uploadFile({
-              file,
-              filePath,
-              onProgress: (percent) => {
-                setPercent(percent)
-              },
-            })
-              .then(({ fileId }) =>
-                createImportMigrateJob(projectName, {
-                  fileID: fileId,
-                  filePath,
-                  conflictMode,
-                  collectionName,
-                  fileType: dataType,
+
+            if (IS_KIT_MODE) {
+              loadFile(file, (_, percent) => setPercent(percent * 100)).then((importData) => {
+                contentBatchImport(projectName, collectionName, { importData, conflictMode })
+                  .then((rsp) => {
+                    setVisible(false)
+                    message.success('上传文件成功，数据导入处理中')
+                    if (onSuccess) {
+                      onSuccess()
+                    }
+                  })
+                  .catch((e) => {
+                    message.error(`导入文件失败：${e.message}`)
+                    setVisible(false)
+                  })
+              })
+            } else {
+              // 文件路径
+              const filePath = `cloudbase-cms/data-import/${random(32)}-${file.name}`
+              // 上传文件
+              uploadFile({
+                file,
+                filePath,
+                onProgress: (percent) => {
+                  setPercent(percent)
+                },
+              })
+                .then(({ fileId }) =>
+                  createImportMigrateJob(projectName, {
+                    fileID: fileId,
+                    filePath,
+                    conflictMode,
+                    collectionName,
+                    fileType: dataType,
+                  })
+                )
+                .then(() => {
+                  setVisible(false)
+                  message.success('上传文件成功，数据导入处理中')
                 })
-              )
-              .then(() => {
-                setVisible(false)
-                message.success('上传文件成功，数据导入处理中')
-              })
-              .catch((e) => {
-                message.error(`导入文件失败：${e.message}`)
-                setVisible(false)
-              })
+                .catch((e) => {
+                  message.error(`导入文件失败：${e.message}`)
+                  setVisible(false)
+                })
+            }
             return false
           }}
         >

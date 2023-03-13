@@ -135,13 +135,16 @@ export async function importSchemasData(projectName: string, schemas: Partial<Sc
   const pureSchemas = schemas.map((schemaItem) => {
     const pureSchema = { ...schemaItem }
     const sysSchemaKeys = Object.keys(pureSchema)
+
+    // 去除schema层系统字段
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let i = 0; i < sysSchemaKeys.length; ++i) {
-      const key = sysSchemaKeys[i]
-      if (sysReg.test(key)) {
-        delete pureSchema[key] // 去除系统字段
-      }
-    }
+    // for (let i = 0; i < sysSchemaKeys.length; ++i) {
+    //   const key = sysSchemaKeys[i]
+    //   if (sysReg.test(key)) {
+    //     delete pureSchema[key] // 去除系统字段
+    //   }
+    // }
+
     pureSchema.fields = (pureSchema?.fields || [])
       .filter((fieldItem) => !fieldItem.isSystem)
       .map((fieldItem) => {

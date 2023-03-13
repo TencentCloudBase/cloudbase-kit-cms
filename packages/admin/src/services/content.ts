@@ -1,3 +1,4 @@
+import { MigrateJobDto } from '@/pages/project/migrate'
 import { tcbRequest } from '@/utils'
 
 export interface Options {
@@ -171,7 +172,12 @@ export async function updateContent(
   })
 }
 
-export async function getMigrateJobs(projectName: string, page = 1, pageSize = 10) {
+/** 获取迁移记录列表数据 */
+export async function getMigrateJobs(
+  projectName: string,
+  page = 1,
+  pageSize = 10
+): Promise<{ total: number; data: MigrateJobDto[] }> {
   return tcbRequest(`/projects/${projectName}/migrate`, {
     method: 'GET',
     params: {
@@ -213,6 +219,28 @@ export async function createExportMigrateJob(
   return tcbRequest(`/projects/${projectName}/migrate/export`, {
     data,
     method: 'POST',
+  })
+}
+
+/** 数据批量导出 */
+export async function contentBatchExport(projectName: string, collectionName: string) {
+  return tcbRequest(`/projects/${projectName}/collections/${collectionName}/contents/export`, {
+    method: 'GET',
+  })
+}
+
+/** 数据批量导入 */
+export async function contentBatchImport(
+  projectName: string,
+  collectionName: string,
+  data: {
+    importData: any
+    conflictMode: string
+  }
+) {
+  return tcbRequest(`/projects/${projectName}/collections/${collectionName}/contents/import`, {
+    method: 'POST',
+    data,
   })
 }
 

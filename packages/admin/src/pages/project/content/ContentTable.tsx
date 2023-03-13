@@ -199,15 +199,17 @@ export const ContentTable: React.FC<{
       >
         新建
       </Button>,
-      !IS_KIT_MODE && <DataImport key="import" collectionName={currentSchema.collectionOldName} />,
-      !IS_KIT_MODE && (
-        <DataExport
-          key="export"
-          schema={currentSchema}
-          searchParams={searchParams}
-          collectionName={currentSchema.collectionOldName}
-        />
-      ),
+      <DataImport
+        key="import"
+        collectionName={currentSchema.collectionName}
+        onSuccess={() => location.reload()}
+      />,
+      <DataExport
+        key="export"
+        schema={currentSchema}
+        searchParams={searchParams}
+        collectionName={currentSchema.collectionName}
+      />,
     ],
     [currentSchema, searchParams, searchFields]
   )

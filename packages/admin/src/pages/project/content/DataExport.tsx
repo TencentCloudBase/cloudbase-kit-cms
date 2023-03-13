@@ -1,9 +1,10 @@
 import { useRequest } from 'umi'
 import React, { useState, useMemo } from 'react'
-import { createExportMigrateJob, getContents } from '@/services/content'
+import { contentBatchExport, createExportMigrateJob, getContents } from '@/services/content'
 import { Menu, Modal, Button, Dropdown, Alert, message } from 'antd'
 import { getProjectName, redirectTo } from '@/utils'
 import { exportData, formatSearchParams } from './tool'
+import { IS_KIT_MODE } from '@/kitConstants'
 
 type ExportFileType = 'csv' | 'json'
 
@@ -27,22 +28,27 @@ const DataExport: React.FC<{ schema: Schema; collectionName: string; searchParam
 
   const { run: getExportData, loading } = useRequest(
     async () => {
-      // 存在搜索条件时，只导出搜索结果，最大 1000 条
-      if (searchKeys?.length) {
-        const { data } = await getContents(projectName, collectionName, {
-          page: 1,
-          fuzzyFilter,
-          pageSize: 1000,
-        })
-
+      if (IS_KIT_MODE) {
+        const data = await contentBatchExport(projectName, collectionName)
         await exportData(data, fileType)
       } else {
-        // 导出全量数据
-        await createExportMigrateJob(projectName, {
-          fileType,
-          collectionName,
-        })
-        redirectTo('content/migrate')
+        // 存在搜索条件时，只导出搜索结果，最大 1000 条
+        if (searchKeys?.length) {
+          const { data } = await getContents(projectName, collectionName, {
+            page: 1,
+            fuzzyFilter,
+            pageSize: 1000,
+          })
+
+          await exportData(data, fileType)
+        } else {
+          // 导出全量数据
+          await createExportMigrateJob(projectName, {
+            fileType,
+            collectionName,
+          })
+          redirectTo('content/migrate')
+        }
       }
     },
     {
@@ -74,9 +80,9 @@ const DataExport: React.FC<{ schema: Schema; collectionName: string; searchParam
               setFileType(key as ExportFileType)
             }}
           >
-            <Menu.Item key="csv">导出为 CSV 文件</Menu.Item>
+            {!IS_KIT_MODE && <Menu.Item key="csv">导出为 CSV 文件</Menu.Item>}
             <Menu.Item key="json">导出为 JSON 文件</Menu.Item>
-            <Menu.Item key="record">查看导出记录</Menu.Item>
+            {!IS_KIT_MODE && <Menu.Item key="record">查看导出记录</Menu.Item>}
           </Menu>
         }
         key="search"
@@ -96,7 +102,8 @@ const DataExport: React.FC<{ schema: Schema; collectionName: string; searchParam
         onCancel={() => setVisible(false)}
       >
         {searchKeys?.length ? <span>将导出满足搜索条件的数据</span> : <span>将导出全量数据</span>}
-        {searchKeys?.length ? (
+        <Alert type="warning" message="最多支持导出 1000 条数据" className="mt-3" />
+        {IS_KIT_MODE && searchKeys?.length ? (
           <Alert type="warning" message="检索情况下最多支持导出 1000 条数据" className="mt-3" />
         ) : null}
       </Modal>

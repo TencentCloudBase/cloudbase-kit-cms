@@ -55,14 +55,12 @@ type ExportFileType = 'csv' | 'json'
  * 将数据导出为 CSV 或 JSON
  */
 export const exportData = async (data: any, fileType: ExportFileType) => {
+  const fileName = `cms-data-export-${getFullDate()}-${Math.floor(Math.random() * 100000)}`
   if (fileType === 'json') {
-    await saveContentToFile(JSON.stringify(data), `cms-data-export-${getFullDate()}.json`)
+    await saveContentToFile(JSON.stringify(data), `${fileName}.json`)
   } else {
     let csv: any = await jsonExport(data)
     csv = `\ufeff${csv}`
-    await saveFile(
-      new Blob([csv], { type: 'text/csv,charset=utf-8' }),
-      `cms-data-export-${getFullDate()}.csv`
-    )
+    await saveFile(new Blob([csv], { type: 'text/csv,charset=utf-8' }), `${fileName}.csv`)
   }
 }

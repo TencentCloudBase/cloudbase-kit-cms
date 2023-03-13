@@ -15,7 +15,7 @@ const StatusMap = {
   fail: '失败',
 }
 
-interface MigrateJobDto {
+export interface MigrateJobDto {
   // 项目 ID
   projectId: string
 
