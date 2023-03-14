@@ -20,6 +20,8 @@ interface ITcbCmsConfing {
   disableHelpButton: boolean
   // 禁用通知提示
   disableNotice: boolean
+  // cms对应的环境来源。miniapp=小程序, qcloud=腾讯云
+  source?: string
   // 微信小程序 AppId
   mpAppID: string
   // CMS 文案配置

@@ -19,6 +19,8 @@ window.TcbCmsConfig = {
 
   // 容器模式时的访问路径
   containerAccessPath: 'xxx-xxx.service.tcloudbase.com/tcb-ext-cms-service-container',
+  // cms对应的环境来源
+  source: "qcloud",
   // 微信小程序 Id
   mpAppID: '',
   // CMS 文案配置
