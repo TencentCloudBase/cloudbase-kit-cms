@@ -292,9 +292,13 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
         </div>
       ))}
 
-      <Button type="primary" loading={loading} onClick={changePermission}>
-        保存
-      </Button>
+      {schemas?.length > 0 ? (
+        <Button type="primary" loading={loading} onClick={changePermission}>
+          保存
+        </Button>
+      ) : (
+        <>内容模型为空</>
+      )}
     </>
   )
 }
