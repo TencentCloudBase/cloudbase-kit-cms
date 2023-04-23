@@ -185,6 +185,16 @@ export const ProjectCreateModal: React.FC<{
               pattern: /^[a-zA-Z0-9]{1,15}$/,
               message: '项目名仅支持字母与数字，不大于 15 个字符',
             },
+            {
+              validator: (rule, value, cb) => {
+                if (value.toLowerCase() === 'project') {
+                  cb('当前内容为关键字')
+                } else {
+                  cb()
+                }
+              },
+              // message: '当前内容为关键字',
+            },
           ]}
         >
           <Input

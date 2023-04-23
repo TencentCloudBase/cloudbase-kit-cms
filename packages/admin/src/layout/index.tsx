@@ -150,7 +150,7 @@ const Layout: React.FC<any> = (props) => {
     // projectName 无效时，重定向到首页
     const projectName = getProjectName()
 
-    if (projectName === 'project' || !projectName) {
+    if (/* projectName === 'project' || */ !projectName) {
       history.push('/home')
       return
     }
