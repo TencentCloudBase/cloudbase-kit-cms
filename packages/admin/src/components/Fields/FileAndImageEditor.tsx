@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Upload, message, Progress } from 'antd'
+import { Upload, message, Progress, Radio, Input, Form, Button } from 'antd'
 import {
   isFileId,
   uploadFile,
@@ -8,23 +8,25 @@ import {
   getFileNameFromUrl,
   batchGetTempFileURL,
 } from '@/utils'
-import { InboxOutlined } from '@ant-design/icons'
+import { InboxOutlined, MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import { DraggerUpload } from '@/components/Upload'
 import { ContentLoading } from '@/components/Loading'
 import { useSetState } from 'react-use'
 
 const { Dragger } = Upload
 
-/**
- * 文件、图片编辑组件
- */
-export const IFileAndImageEditor: React.FC<{
+interface IFileAndImageEditorProps {
   field: SchemaField
   type: 'file' | 'image'
   value?: string | string[]
   resourceLinkType?: 'https' | 'fileId'
   onChange?: (v: string | string[] | null) => void
-}> = (props) => {
+}
+
+/**
+ * 文件、图片编辑组件
+ */
+export const IFileAndImageEditor: React.FC<IFileAndImageEditorProps> = (props) => {
   let { value: links, type, field, onChange = () => {}, resourceLinkType = 'fileId' } = props
   const { isMultiple } = field
   const query = getPageQuery()
@@ -245,5 +247,88 @@ const IMultipleEditorNext: React.FC<{
       uploadTip={`点击或拖拽${tipText}上传`}
       listType={type === 'image' ? 'picture' : 'text'}
     />
+  )
+}
+
+/** 图片/文件输入添加自定义输入模式 */
+export const IFileAndImageEditorWithUrl: React.FC<IFileAndImageEditorProps> = (props) => {
+  const { field, type, resourceLinkType } = props
+  const setTypeOpts: { [key: string]: string } = {
+    upload: `上传${type === 'image' ? '图片' : '文件'}`,
+    url: 'URL',
+  }
+  const [uploadType, setUploadType] = useState<string>('upload')
+  if (resourceLinkType === 'https') {
+    return (
+      <>
+        <Radio.Group
+          style={{ marginBottom: 6 }}
+          onChange={(evt) => setUploadType(evt.target.value)}
+          value={uploadType}
+        >
+          {Object.keys(setTypeOpts).map((key) => (
+            <Radio key={key} value={key}>
+              {setTypeOpts[key]}
+            </Radio>
+          ))}
+        </Radio.Group>
+        {uploadType === 'upload' ? (
+          <Form.Item {...field}>
+            <IFileAndImageEditor {...props} />
+          </Form.Item>
+        ) : field.isMultiple ? (
+          <Form.List name={field.name}>
+            {(fields, { add, remove }) => {
+              return (
+                <div>
+                  {fields?.map((fieldItem, index) => {
+                    return (
+                      <Form.Item key={index}>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <Form.Item
+                            {...fieldItem}
+                            noStyle
+                            validateTrigger={['onChange', 'onBlur']}
+                          >
+                            <Input />
+                          </Form.Item>
+                          <MinusCircleOutlined
+                            className="dynamic-delete-button"
+                            style={{ margin: '0 8px' }}
+                            onClick={() => {
+                              remove(fieldItem.name)
+                            }}
+                          />
+                        </div>
+                      </Form.Item>
+                    )
+                  })}
+                  <Form.Item>
+                    <Button
+                      type="dashed"
+                      onClick={() => {
+                        add()
+                      }}
+                      style={{ width: '100%' }}
+                    >
+                      <PlusOutlined /> 添加字段
+                    </Button>
+                  </Form.Item>
+                </div>
+              )
+            }}
+          </Form.List>
+        ) : (
+          <Form.Item {...field}>
+            <Input />
+          </Form.Item>
+        )}
+      </>
+    )
+  }
+  return (
+    <Form.Item {...field}>
+      <IFileAndImageEditor {...props} />
+    </Form.Item>
   )
 }
