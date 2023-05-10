@@ -36,11 +36,14 @@ export async function getInitialState(): Promise<{
     loginState = await getLoginState()
   } catch (error: any) {
     console.log(error)
-    message.error(`CloudBase JS SDK 初始化失败，${error?.message}`)
+    message.error(`CloudBase JS SDK 初始化失败，${error?.message || ''}`)
   }
 
   // 没有登录，重新登录
   if (/* !isDevEnv() && */ !loginState && history.location.pathname !== '/login') {
+    if (isDevEnv()) {
+      console.log('您还没有登录或登录已过期，请登录后再操作！')
+    }
     history.push('/login')
     message.error('您还没有登录或登录已过期，请登录后再操作！')
     // 移除 loading 元素
@@ -213,7 +216,7 @@ export const request: RequestConfig = {
  * 注册微应用
  */
 export const qiankun = async () => {
-  const isLogin = await getLoginState()
+  const isLogin = await getLoginState().catch((e) => null)
 
   // 未登录时返回空配置
   if (!isLogin || IS_KIT_MODE) {

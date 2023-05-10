@@ -174,4 +174,7 @@ interface Schema {
 
   /** 是否开启api访问（旧cms中该字段通过项目设置参数计算得出） */
   enableApiAccess?: boolean
+
+  /** 模型数据库类型 */
+  databaseType?: 'system' | 'cloud' // system:中心化数据库（后端数据库，用户不可见）；cloud：云开发数据库（用户在云开发控制台可见）
 }

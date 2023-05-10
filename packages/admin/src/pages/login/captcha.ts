@@ -18,7 +18,7 @@ export interface GetCaptchaResponse {
 const STORAGE_TOKEN_KEY = 'kit_cms_captcha_token'
 
 /** 远端获取验证token地址 */
-const GET_CAPTCHA_URL = `https://${window.TcbCmsConfig.envId}.${window.TcbCmsConfig.region}.auth.tcloudbase.com/auth/v1/captcha/init?client_id=${window.TcbCmsConfig.clientId}`
+const GET_CAPTCHA_URL = `https://${window.TcbCmsConfig.envId}.${window.TcbCmsConfig.region}.auth.tcloudbasegateway.com/auth/v1/captcha/init?client_id=${window.TcbCmsConfig.clientId}`
 
 /** 储存验证token到本地 */
 export function saveCaptchaToken(token: CaptchaToken) {

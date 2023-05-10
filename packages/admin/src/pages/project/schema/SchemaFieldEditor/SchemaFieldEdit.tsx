@@ -206,6 +206,7 @@ export const SchemaFieldEditorModal: React.FC<{
 
   // 类型特定的属性
   const SpecificAttributeFormItem = getFieldFormItem(selectedField?.type, {
+    currentSchema,
     schemas,
     connectSchema,
     selectedField,

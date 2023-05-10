@@ -113,7 +113,7 @@ function initCloudBaseApp() {
         apiOrigin:
           IS_KIT_MODE && !IS_CUSTOM_ENV
             ? `https://${envId}.${region}.tcb-api.tencentcloudapi.com`
-            : `https://${envId}.${region}.auth.tcloudbase.com`,
+            : `https://${envId}.${region}.auth.tcloudbasegateway.com`,
         clientId: IS_CUSTOM_ENV ? clientId : envId, // 环境 ID
       })
     }
@@ -136,7 +136,7 @@ export async function loginWithPassword(
     const apiOrigin =
       IS_KIT_MODE && !IS_CUSTOM_ENV
         ? `https://${envId}.${region}.tcb-api.tencentcloudapi.com`
-        : `https://${envId}.${region}.auth.tcloudbase.com`
+        : `https://${envId}.${region}.auth.tcloudbasegateway.com`
     const tempAuth = new CloudbaseOAuth({
       apiOrigin,
       clientId: IS_CUSTOM_ENV ? clientId : envId, // 环境 ID
@@ -171,9 +171,21 @@ export async function loginWithPassword(
  */
 export async function getLoginState() {
   // sdk内部bug，缓存中的token判定有点问题，我们这里加一步来在业务侧修正这个问题（该函数内会判定token有效期）
+  let token
+  let err
   try {
-    await auth.oauth2client.getAccessToken()
-  } catch (e) {}
+    token = await auth.oauth2client.getAccessToken()
+  } catch (e) {
+    err = e
+  }
+
+  // eslint-disable-next-line no-extra-boolean-cast
+  if (!!err) {
+    throw err // 有明确的错误，就先抛出错误
+  }
+  if (!token) {
+    throw new Error('getAccessToken error')
+  }
 
   // 获取登录态
   return auth.authApi.getLoginState()

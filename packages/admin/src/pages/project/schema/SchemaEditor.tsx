@@ -3,7 +3,7 @@ import { useRequest } from 'umi'
 import { useConcent } from 'concent'
 import { SchmeaCtx } from 'typings/store'
 import { createSchema, updateSchemaAndCollection, updateSchemaFiled } from '@/services/schema'
-import { Modal, Form, message, Input, Space, Button, Typography, Tooltip } from 'antd'
+import { Modal, Form, message, Input, Space, Button, Typography, Tooltip, Switch } from 'antd'
 import { QuestionCircleTwoTone } from '@ant-design/icons'
 import { getSystemConfigurableFields, getProjectName } from '@/utils'
 import { IS_KIT_MODE } from '@/kitConstants'
@@ -46,6 +46,7 @@ const SchemaEditor: React.FC = () => {
   const ctx = useConcent<{}, SchmeaCtx>('schema')
   const contentCtx = useConcent('content')
   const { schemaEditAction, schemaEditVisible, currentSchema } = ctx.state
+  const DATABASE_TYPE_KEY = 'kit_cms_schema_databaseType'
 
   // 关闭弹窗
   const onClose = () =>
@@ -65,6 +66,7 @@ const SchemaEditor: React.FC = () => {
         description,
         docCreateTimeField,
         docUpdateTimeField,
+        databaseType,
       } = data
 
       // 新建模型
@@ -75,6 +77,7 @@ const SchemaEditor: React.FC = () => {
           description,
           docCreateTimeField,
           docUpdateTimeField,
+          databaseType,
           // fields: getSystemConfigurableFields({
           //   docCreateTimeField,
           //   docUpdateTimeField,
@@ -128,6 +131,15 @@ const SchemaEditor: React.FC = () => {
   // 获取初始化的值
   const getInitialValues = useCallback(getSchemaInitialValues, [schemaEditAction, currentSchema])
 
+  const [form] = Form.useForm()
+  const getDatabaseTypeChecked = useCallback(() => {
+    return schemaEditAction === 'create'
+      ? ['cloud', 'system'].includes(localStorage.getItem(DATABASE_TYPE_KEY) as string)
+        ? localStorage.getItem(DATABASE_TYPE_KEY)
+        : 'system'
+      : currentSchema?.databaseType
+  }, [schemaEditAction, currentSchema])
+
   return (
     <Modal
       centered
@@ -140,6 +152,7 @@ const SchemaEditor: React.FC = () => {
       title={`${actionTip}模型`}
     >
       <Form
+        form={form}
         layout="vertical"
         labelAlign="left"
         initialValues={getInitialValues(schemaEditAction, currentSchema)}
@@ -149,6 +162,7 @@ const SchemaEditor: React.FC = () => {
             onClose()
             return
           }
+          localStorage.setItem(DATABASE_TYPE_KEY, v?.databaseType)
           run(v)
         }}
       >
@@ -194,6 +208,26 @@ const SchemaEditor: React.FC = () => {
             maxLength={30}
             placeholder="描述信息，会展示在对应内容的管理页面顶部，可用于内容提示，支持 HTML 片段"
           />
+        </Form.Item>
+
+        <Form.Item
+          label="模型数据是否存储至云开发环境数据库"
+          name="databaseType"
+          initialValue={getDatabaseTypeChecked()}
+        >
+          <>
+            <Switch
+              disabled={schemaEditAction === 'edit'}
+              defaultChecked={getDatabaseTypeChecked() === 'cloud'}
+              onChange={(checked) =>
+                form.setFieldsValue({ databaseType: checked ? 'cloud' : 'system' })
+              }
+            />
+            <div style={{ opacity: 0.5 }}>
+              <div>默认关闭，数据存储在CMS中心化数据库，可通过OpenAPI获取数据。</div>
+              <div>如果开启，模型数据则存储在云开发环境的数据库，且无法通过OpenAPI获取数据。</div>
+            </div>
+          </>
         </Form.Item>
 
         {!IS_KIT_MODE && schemaEditAction === 'create' && (

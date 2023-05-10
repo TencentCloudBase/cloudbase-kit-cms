@@ -223,6 +223,11 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
     [project]
   )
 
+  const surrpotApi = useCallback(
+    (schema: Schema) => schema?.databaseType === undefined || schema?.databaseType === 'system',
+    []
+  )
+
   return (
     <>
       <Typography.Title level={3}>访问权限</Typography.Title>
@@ -231,6 +236,7 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
           <Space>
             <span>{schema.displayName}</span>
             <Checkbox
+              disabled={!surrpotApi(schema)}
               checked={readableCollections?.includes(schema.collectionName)}
               onChange={(e) => {
                 setReadableCollections(
@@ -265,7 +271,7 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
               </Checkbox>
             )}
             {
-              /* initialValues.path */ schema?.enableApiAccess && (
+              /* initialValues.path */ schema?.enableApiAccess && surrpotApi(schema) && (
                 <Button
                   type="link"
                   onClick={() => {

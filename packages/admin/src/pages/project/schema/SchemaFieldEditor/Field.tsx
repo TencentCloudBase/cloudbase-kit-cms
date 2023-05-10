@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { Input, InputNumber, Form, Space, Select, Switch, Typography, Row, Col, Button } from 'antd'
 import { ISwitch, IDatePicker } from '@/components/Fields'
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'
@@ -60,6 +60,7 @@ export const getFieldDefaultValueInput = (
 export function getFieldFormItem(
   type: string,
   options: {
+    currentSchema: Schema
     formValue: any
     schemas: Schema[]
     selectedField: SchemaField
@@ -67,7 +68,13 @@ export function getFieldFormItem(
     connectSchema?: Schema
   }
 ) {
-  const { schemas, connectSchema, selectedField, fieldAction, formValue } = options
+  const { currentSchema, schemas, connectSchema, selectedField, fieldAction, formValue } = options
+  const isDatabaseTypeSame = useCallback((type1: string | undefined, type2: string | undefined) => {
+    const useType = (type: string | undefined) => {
+      return type || 'system'
+    }
+    return useType(type1) === useType(type2)
+  }, [])
 
   switch (type) {
     case 'String':
@@ -206,7 +213,7 @@ export function getFieldFormItem(
     case 'Connect':
       return (
         <>
-          <Form.Item label="关联">
+          <Form.Item label="关联" tooltip="可以选择与当前模型数据存储方式一致的其他模型进行关联">
             <Space>
               <Form.Item
                 label="关联内容"
@@ -214,11 +221,15 @@ export function getFieldFormItem(
                 rules={[{ required: true, message: '请选择关联内容！' }]}
               >
                 <Select style={{ width: 200 }}>
-                  {schemas?.map((schema: Schema) => (
-                    <Option value={schema.collectionName} key={schema.collectionName}>
-                      {schema.displayName}
-                    </Option>
-                  ))}
+                  {schemas
+                    ?.filter((schema) =>
+                      isDatabaseTypeSame(schema?.databaseType, currentSchema?.databaseType)
+                    )
+                    ?.map((schema: Schema) => (
+                      <Option value={schema.collectionName} key={schema.collectionName}>
+                        {schema.displayName}
+                      </Option>
+                    ))}
                 </Select>
               </Form.Item>
               <Form.Item
