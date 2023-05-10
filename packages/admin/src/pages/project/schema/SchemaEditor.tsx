@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { useRequest } from 'umi'
 import { useConcent } from 'concent'
 import { SchmeaCtx } from 'typings/store'
@@ -45,7 +45,7 @@ const SchemaEditor: React.FC = () => {
   const projectName = getProjectName()
   const ctx = useConcent<{}, SchmeaCtx>('schema')
   const contentCtx = useConcent('content')
-  const { schemaEditAction, schemaEditVisible, currentSchema } = ctx.state
+  const { schemaEditAction, currentSchema } = ctx.state
   const DATABASE_TYPE_KEY = 'kit_cms_schema_databaseType'
 
   // 关闭弹窗
@@ -146,7 +146,7 @@ const SchemaEditor: React.FC = () => {
       destroyOnClose
       footer={null}
       width={600}
-      visible={schemaEditVisible}
+      visible={true}
       onOk={() => onClose()}
       onCancel={() => onClose()}
       title={`${actionTip}模型`}

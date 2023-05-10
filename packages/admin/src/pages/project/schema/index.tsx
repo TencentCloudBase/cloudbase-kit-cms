@@ -78,7 +78,7 @@ export default (): React.ReactNode => {
       </ProCard>
 
       {/* 编辑弹窗 */}
-      <SchemaEditor />
+      {ctx.state.schemaEditVisible && <SchemaEditor />}
       <SchemaExportModal visible={exportVisible} onClose={() => setExportVisible(false)} />
       <SchemaImportModal visible={importVisible} onClose={() => setImportVisible(false)} />
     </PageContainer>

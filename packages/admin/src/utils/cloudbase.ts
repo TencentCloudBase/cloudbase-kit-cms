@@ -300,7 +300,7 @@ export async function tcbRequest<T = any>(
     } else {
       // 重置url
       // eslint-disable-next-line no-param-reassign
-      url = `https://tcb.${region}.kits.tcloudbase.com/cms/${kitId}/v1${url}`
+      url = `https://tcb.${region}.kits.tcloudbasegateway.com/cms/${kitId}/v1${url}`
 
       result = await fetch(reqParamFormat(url, { ...(options || {}) }).url, {
         method: reqParam.method,

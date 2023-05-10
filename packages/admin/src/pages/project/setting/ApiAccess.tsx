@@ -283,7 +283,7 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
                     } else {
                       // copyToClipboard(`https://${accessDomain}${path}/v1.0/${schema.collectionOldName}`)
                       copyToClipboard(
-                        `https://${window.TcbCmsConfig.envId}.${window.TcbCmsConfig.region}.kits.tcloudbase.com/cms/${window.TcbCmsConfig.kitId}/v1/open-api/projects/${projectName}/collections/${schema.collectionName}/contents?limit=10&offset=0`
+                        `https://${window.TcbCmsConfig.envId}.${window.TcbCmsConfig.region}.kits.tcloudbasegateway.com/cms/${window.TcbCmsConfig.kitId}/v1/open-api/projects/${projectName}/collections/${schema.collectionName}/contents?limit=10&offset=0`
                       )
                       message.success('复制成功')
                     }
