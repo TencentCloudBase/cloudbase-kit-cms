@@ -15,6 +15,7 @@ import { IS_CUSTOM_ENV, IS_KIT_MODE } from '@/kitConstants'
 import { getInitialState } from '@/app'
 import { ApiUrls } from '@cloudbase/oauth/src/auth/consts'
 import { appendCaptchaTokenToURL } from '@/pages/login/captcha'
+import moment from 'moment'
 
 interface IntegrationRes {
   statusCode: number
@@ -480,13 +481,14 @@ export async function uploadFile(options: {
     templateData[`random${i}`] = random(i)
   }
 
+  const prePath = 'cloudbase-kit-cms'
   let uploadFilePath: string
 
   // 路径模版优先级最高
   if (filePathTemplate) {
-    uploadFilePath = 'cloudbase-cms/' + templateCompile(filePathTemplate, templateData)
+    uploadFilePath = `${prePath}/${templateCompile(filePathTemplate, templateData)}`
   } else {
-    uploadFilePath = filePath || `cloudbase-cms/upload/${day}/${random(filenameLength)}_${ext}`
+    uploadFilePath = filePath || `${prePath}/upload/${day}/${random(filenameLength)}_${ext}`
   }
 
   // 上传文件到静态托管
@@ -566,7 +568,9 @@ export async function uploadFile(options: {
         url: `${STORAGE_BASE_URL}/get-objects-upload-info`,
         body: [
           {
-            objectId: `${Math.floor(Math.random() * 1000) + 1000}${Date.now()}_${file.name}`,
+            objectId: `kit-cms-upload/${moment().format('YYYY-MM-DD')}/${
+              Math.floor(Math.random() * 1000) + 1000
+            }${Date.now()}_${file.name}`,
           },
         ] as any,
         query: {},
