@@ -290,12 +290,18 @@ export async function tcbRequest<T = any>(
 
       // 错误处理
       if (result?.code !== 'NORMAL') {
-        apiErrorHandler(result, url)
-        // notification.error({
-        //   message: '请求错误',
-        //   description: `服务异常：${result?.status || '--'}: ${url}`,
-        // })
-        return Promise.reject(result?.message)
+        if (result?.code === 'INVALID_TOKEN') {
+          // 这种情况是token格式错误（比如无头cms需要group字段，用auth-sdk其实是可以登陆的，但我们这里要限制只能使用kit-cms对应group）
+          await logout()
+          await getInitialState() // 通过这句拉起登陆界面
+        } else {
+          apiErrorHandler(result, url)
+          // notification.error({
+          //   message: '请求错误',
+          //   description: `服务异常：${result?.status || '--'}: ${url}`,
+          // })
+          return Promise.reject(result?.message)
+        }
       }
       return result.result
     } else {
@@ -322,11 +328,17 @@ export async function tcbRequest<T = any>(
 
       // 错误处理
       if (data?.code !== 'NORMAL') {
-        apiErrorHandler(result, url)
-        // notification.error({
-        //   message: '请求错误',
-        //   description: `服务异常：${result.status}: ${url}`,
-        // })
+        if (result?.code === 'INVALID_TOKEN') {
+          // 这种情况是token格式错误（比如无头cms需要group字段，用auth-sdk其实是可以登陆的，但我们这里要限制只能使用kit-cms对应group）
+          await logout()
+          await getInitialState()
+        } else {
+          apiErrorHandler(result, url)
+          // notification.error({
+          //   message: '请求错误',
+          //   description: `服务异常：${result.status}: ${url}`,
+          // })
+        }
       }
       return data.result
     }
