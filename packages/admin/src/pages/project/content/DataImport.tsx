@@ -15,6 +15,7 @@ import { InboxOutlined } from '@ant-design/icons'
 import { contentBatchImport, createImportMigrateJob } from '@/services/content'
 import { getProjectName, random, redirectTo, uploadFile } from '@/utils'
 import { IS_KIT_MODE } from '@/kitConstants'
+import { scvStrToObject } from './tool'
 
 /** 文件加载 */
 async function loadFile(
@@ -97,7 +98,7 @@ const DataImport: React.FC<{ collectionName: string; onSuccess?: () => any }> = 
               setDataType(key as string)
             }}
           >
-            {!IS_KIT_MODE && <Menu.Item key="csv">通过 CSV 导入</Menu.Item>}
+            <Menu.Item key="csv">通过 CSV 导入</Menu.Item>
             <Menu.Item key="json">通过 JSON 导入</Menu.Item>
             {/* <Menu.Item key="jsonlines">通过 JSON Lines 导入</Menu.Item> */}
             {!IS_KIT_MODE && <Menu.Item key="record">查看导入记录</Menu.Item>}
@@ -144,6 +145,10 @@ const DataImport: React.FC<{ collectionName: string; onSuccess?: () => any }> = 
 
             if (IS_KIT_MODE) {
               loadFile(file, (_, percent) => setPercent(percent * 100)).then((importData) => {
+                if (dataType === 'csv') {
+                  // eslint-disable-next-line no-param-reassign
+                  importData = scvStrToObject(importData)
+                }
                 contentBatchImport(projectName, collectionName, { importData, conflictMode })
                   .then((rsp) => {
                     setVisible(false)

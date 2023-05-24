@@ -80,7 +80,7 @@ const DataExport: React.FC<{ schema: Schema; collectionName: string; searchParam
               setFileType(key as ExportFileType)
             }}
           >
-            {!IS_KIT_MODE && <Menu.Item key="csv">导出为 CSV 文件</Menu.Item>}
+            <Menu.Item key="csv">导出为 CSV 文件</Menu.Item>
             <Menu.Item key="json">导出为 JSON 文件</Menu.Item>
             {!IS_KIT_MODE && <Menu.Item key="record">查看导出记录</Menu.Item>}
           </Menu>
