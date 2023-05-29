@@ -3,6 +3,7 @@ import { Space, Tag, Tooltip, Typography } from 'antd'
 import { ProColumns } from '@ant-design/pro-table'
 import { formatDisplayTimeByType } from '@/utils'
 import { IConnectRender } from './Connect'
+import { FieldErrorCom } from '../../content/columns'
 
 const { Text } = Typography
 
@@ -179,11 +180,20 @@ export const taskColumns: ProColumns[] = [
       index: number,
       action: any
     ): React.ReactNode | React.ReactNode[] => {
-      const date =
-        typeof record.createTime === 'undefined'
+      // const date =
+      //   typeof record.createTime === 'undefined'
+      //     ? '-'
+      //     : formatDisplayTimeByType(record.createTime, 'timestamp-ms', 'DateTime')
+      // return <Text>{date}</Text>
+      const err = new Error(`当前数据不是有效的时间：：${text}`)
+      try {
+        const date = !record?.createTime
           ? '-'
           : formatDisplayTimeByType(record.createTime, 'timestamp-ms', 'DateTime')
-      return <Text>{date}</Text>
+        return date === 'Invalid date' ? <FieldErrorCom error={err} /> : <Text>{date}</Text>
+      } catch (e) {
+        return <FieldErrorCom error={err} />
+      }
     },
   },
 ]

@@ -8,7 +8,7 @@ import {
   getSchemaSystemFields,
 } from '@/utils'
 import ErrorBoundary from '@/components/ErrorBoundary'
-import { message, Popconfirm, Space } from 'antd'
+import { message, Popconfirm, Space, Tooltip } from 'antd'
 
 type DateTime = 'dateTime' | 'date' | 'textarea'
 
@@ -49,28 +49,7 @@ const fieldToColumn = (field: SchemaField) => {
   const render = (text: React.ReactNode, record: any, index: number, action: any) => {
     const component = getFieldRender(field)(text, record, index, action)
 
-    return (
-      <ErrorBoundary
-        fallbackRender={({ error }) => (
-          <Popconfirm
-            title={
-              <div>
-                异常信息（点击确认复制异常信息）：
-                <p>{error?.message}</p>
-              </div>
-            }
-            onConfirm={() => {
-              copyToClipboard(error.message)
-              message.success('复制错误信息成功')
-            }}
-          >
-            <Space className="text-red-600 font-bold">❌ 数据异常</Space>
-          </Popconfirm>
-        )}
-      >
-        {component}
-      </ErrorBoundary>
-    )
+    return <ErrorBoundary fallbackRender={FieldErrorCom}>{component}</ErrorBoundary>
   }
 
   // 计算列宽度，略大于计算宽度
@@ -105,4 +84,29 @@ const fieldToColumn = (field: SchemaField) => {
   }
 
   return column
+}
+
+/** 格子错误组件 */
+export const FieldErrorCom = (props: { error: Error }) => {
+  const { error } = props
+  return (
+    <Popconfirm
+      title={
+        <div>
+          异常信息（点击确认复制异常信息）：
+          <p>{error?.message}</p>
+        </div>
+      }
+      onConfirm={() => {
+        copyToClipboard(error.message)
+        message.success('复制错误信息成功')
+      }}
+    >
+      <Tooltip title="点击查看详情">
+        <Space className="text-red-600 font-bold" style={{ cursor: 'pointer' }}>
+          ❌ 数据异常
+        </Space>
+      </Tooltip>
+    </Popconfirm>
+  )
 }

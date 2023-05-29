@@ -78,13 +78,17 @@ export async function getContents(
   options?: Options
 ): Promise<{ total: number; data: any[] }> {
   // 将老接口的参数进行缩减
-  const { page = 1, pageSize = 10 } = options || {}
+  const { page = 1, pageSize = 10, sort } = options || {}
+  const data: any = {
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
+  }
+  if (Object.keys(sort || {}).length > 0) {
+    data.sort = JSON.stringify(sort)
+  }
   const res = await tcbRequest(`/projects/${projectName}/collections/${collectionName}/contents`, {
     method: 'GET',
-    data: {
-      limit: pageSize,
-      offset: (page - 1) * pageSize,
-    },
+    data,
     // data: {
     //   options,
     //   resource: collectionName,

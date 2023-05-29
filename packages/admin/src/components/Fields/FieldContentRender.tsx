@@ -9,6 +9,8 @@ import {
 } from '@/utils'
 import { IObjectRender } from './Object'
 import { IMedia } from './Media'
+import { InfoCircleTwoTone } from '@ant-design/icons'
+import { FieldErrorCom } from '@/pages/project/content/columns'
 
 const { Text } = Typography
 
@@ -110,11 +112,15 @@ export function getFieldRender(field: SchemaField) {
         index: number,
         action: any
       ): React.ReactNode | React.ReactNode[] => {
-        const date =
-          typeof record[name] === 'undefined'
+        const err = new Error(`当前数据不是有效的时间：：${text}`)
+        try {
+          const date = !record?.[name]
             ? '-'
             : formatDisplayTimeByType(record[name], field.dateFormatType, type)
-        return <Text>{date}</Text>
+          return date === 'Invalid date' ? <FieldErrorCom error={err} /> : <Text>{date}</Text>
+        } catch (e) {
+          return <FieldErrorCom error={err} />
+        }
       }
     case 'Image':
       return (
@@ -148,13 +154,18 @@ export function getFieldRender(field: SchemaField) {
         index: number,
         action: any
       ): React.ReactNode | React.ReactNode[] => {
-        if (!record[name]) {
+        if (!record?.[name]) {
           return text
+        }
+
+        if (!Array.isArray(record[name])) {
+          const err = new Error(`当前数据不是数组类型：：${text}`)
+          return <FieldErrorCom error={err} />
         }
 
         return (
           <Space direction="vertical">
-            {record[name]?.map((val: string, index: number) => (
+            {record[name].map((val: string, index: number) => (
               <Tag key={index}>{val}</Tag>
             ))}
           </Space>
@@ -208,4 +219,17 @@ export function getFieldRender(field: SchemaField) {
         action: any
       ): React.ReactNode | React.ReactNode[] => text
   }
+}
+
+/** 数据格式错误 */
+export const FiledFormatError = (props: { width?: number; text: React.ReactNode }) => {
+  const { width, text } = props
+  return (
+    <Tooltip title={text}>
+      <Text ellipsis underline style={{ width, userSelect: 'none', color: 'red' }}>
+        数据格式错误
+        {/* <InfoCircleTwoTone twoToneColor="red"/> */}
+      </Text>
+    </Tooltip>
+  )
 }
