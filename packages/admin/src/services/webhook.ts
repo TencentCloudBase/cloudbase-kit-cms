@@ -21,52 +21,88 @@ export interface Options {
   payload: Record<string, any>
 }
 
-export const getWebhooks = async (projectId: string, options?: Partial<Options>) => {
-  return tcbRequest(`/projects/${projectId}/webhooks`, {
-    method: 'POST',
-    data: {
-      options,
-      action: 'getMany',
-    },
+export const getWebhooks = async (projectName: string, options?: Partial<Options>) => {
+  const { page = 1, pageSize = 10, sort } = options || {}
+  const data: any = {
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
+  }
+  if (Object.keys(sort || {}).length > 0) {
+    data.sort = JSON.stringify(sort)
+  }
+  return tcbRequest(`/projects/${projectName}/webhooks`, {
+    method: 'GET',
+    data,
   })
+  // return tcbRequest(`/projects/${projectName}/webhooks`, {
+  //   method: 'POST',
+  //   data: {
+  //     options,
+  //     action: 'getMany',
+  //   },
+  // })
 }
 
-export const getWebhookLog = async (projectId: string, options?: Partial<Options>) => {
-  return tcbRequest(`/projects/${projectId}/webhooks/log`, {
-    method: 'POST',
-    data: {
-      options,
-      action: 'getMany',
-    },
+export const getWebhookLog = async (projectName: string, options?: Partial<Options>) => {
+  const { page = 1, pageSize = 10, sort } = options || {}
+  const data: any = {
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
+  }
+  if (Object.keys(sort || {}).length > 0) {
+    data.sort = JSON.stringify(sort)
+  }
+  return tcbRequest(`/projects/${projectName}/webhookLog`, {
+    method: 'GET',
+    data,
   })
+  // return tcbRequest(`/projects/${projectName}/webhooks/log`, {
+  //   method: 'POST',
+  //   data: {
+  //     options,
+  //     action: 'getMany',
+  //   },
+  // })
 }
 
-export const createWebhook = async (projectId: string, options?: Partial<Options>) => {
-  return tcbRequest(`/projects/${projectId}/webhooks`, {
+export const createWebhook = async (projectName: string, options?: Partial<Options>) => {
+  return tcbRequest(`/projects/${projectName}/webhooks`, {
     method: 'POST',
-    data: {
-      options,
-      action: 'createOne',
-    },
+    data: options?.payload,
   })
+  // return tcbRequest(`/projects/${projectName}/webhooks`, {
+  //   method: 'POST',
+  //   data: {
+  //     options,
+  //     action: 'createOne',
+  //   },
+  // })
 }
 
-export const updateWebhook = async (projectId: string, options?: Partial<Options>) => {
-  return tcbRequest(`/projects/${projectId}/webhooks`, {
-    method: 'POST',
-    data: {
-      options,
-      action: 'updateOne',
-    },
+export const updateWebhook = async (projectName: string, options?: Partial<Options>) => {
+  return tcbRequest(`/projects/${projectName}/webhooks/${options?.filter?._id}`, {
+    method: 'PATCH',
+    data: options?.payload,
   })
+  // return tcbRequest(`/projects/${projectName}/webhooks`, {
+  //   method: 'POST',
+  //   data: {
+  //     options,
+  //     action: 'updateOne',
+  //   },
+  // })
 }
 
-export const deleteWebhook = async (projectId: string, options?: Partial<Options>) => {
-  return tcbRequest(`/projects/${projectId}/webhooks`, {
-    method: 'POST',
-    data: {
-      options,
-      action: 'deleteOne',
-    },
+export const deleteWebhook = async (projectName: string, options?: Partial<Options>) => {
+  return tcbRequest(`/projects/${projectName}/webhooks/${options?.filter?._id}`, {
+    method: 'DELETE',
+    data: options?.payload,
   })
+  // return tcbRequest(`/projects/${projectName}/webhooks`, {
+  //   method: 'POST',
+  //   data: {
+  //     options,
+  //     action: 'deleteOne',
+  //   },
+  // })
 }

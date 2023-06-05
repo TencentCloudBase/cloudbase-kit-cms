@@ -29,7 +29,7 @@ export const WebhookForm: React.FC<{
       if (action === 'create') {
         await createWebhook(projectName, {
           payload: {
-            projectId: projectName,
+            // projectId: projectName,
             ...webhook,
           },
           filter: {
@@ -44,7 +44,7 @@ export const WebhookForm: React.FC<{
             _id: selectedWebhook?._id,
           },
           payload: {
-            projectId: projectName,
+            // projectId: projectName,
             ...webhook,
           },
         })
@@ -90,7 +90,8 @@ export const WebhookForm: React.FC<{
           if (coll === '*') {
             return '*'
           } else {
-            return schemas.find((schema) => coll === schema.collectionName)
+            return coll
+            // return schemas.find((schema) => coll === schema?.collectionName)?.collectionName
           }
         })
         run(v)
@@ -132,8 +133,8 @@ export const WebhookForm: React.FC<{
           <Select.Option key="all" value="*">
             全部内容
           </Select.Option>
-          {schemas?.map((schema: any) => (
-            <Select.Option key={schema._id} value={schema._id}>
+          {schemas?.map((schema) => (
+            <Select.Option key={schema.collectionName} value={schema.collectionName}>
               {schema.displayName}
             </Select.Option>
           ))}
@@ -142,7 +143,7 @@ export const WebhookForm: React.FC<{
 
       <Form.Item
         label="触发事件"
-        name="event"
+        name="events"
         rules={[{ required: true, message: '请选择触发类型！' }]}
       >
         <Select mode="multiple">
@@ -178,7 +179,7 @@ export const WebhookForm: React.FC<{
               <Form.Item label="HTTP 方法" name="method">
                 <Select>
                   <Select.Option value="POST">POST</Select.Option>
-                  <Select.Option value="UPDATE">UPDATE</Select.Option>
+                  <Select.Option value="PATCH">PATCH</Select.Option>
                   <Select.Option value="DELETE">DELETE</Select.Option>
                 </Select>
               </Form.Item>

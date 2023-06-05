@@ -45,13 +45,13 @@ const defaultSystemMenuData: MenuDataItem[] = [
     icon: <DatabaseTwoTone />,
     children: [],
   },
-  // {
-  //   authority: 'canWebhook',
-  //   path: '/project/webhook',
-  //   name: 'Webhook',
-  //   icon: <RocketTwoTone />,
-  //   children: [],
-  // },
+  {
+    authority: 'canWebhook',
+    path: '/project/webhook',
+    name: 'Webhook',
+    icon: <RocketTwoTone />,
+    children: [],
+  },
   {
     authority: 'isAdmin',
     path: '/project/setting',

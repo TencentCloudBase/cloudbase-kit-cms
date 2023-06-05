@@ -2,6 +2,11 @@ import React from 'react'
 import { ProColumns } from '@ant-design/pro-table'
 import { Popover, Space, Tag, Tooltip, Typography } from 'antd'
 
+interface WebHookTableSchemaBriefs {
+  collection: string
+  displayName: string
+}
+
 const EventMap = {
   create: '创建内容',
   delete: '删除内容',
@@ -15,7 +20,9 @@ const EventMap = {
   deleteMany: '删除内容[批量]',
 }
 
-export const WebhookColumns: ProColumns<Webhook>[] = [
+export const WebhookColumns: ProColumns<
+  Webhook & { schemaBriefs?: Array<WebHookTableSchemaBriefs> }
+>[] = [
   {
     title: 'Webhook 名称',
     dataIndex: 'name',
@@ -32,11 +39,11 @@ export const WebhookColumns: ProColumns<Webhook>[] = [
   },
   {
     title: '触发类型',
-    dataIndex: 'event',
+    dataIndex: 'events',
     valueType: 'textarea',
     width: 150,
     render: (_, row) => {
-      if (row.event.includes('*')) {
+      if (row.events.includes('*')) {
         return '全部'
       }
 
@@ -44,15 +51,15 @@ export const WebhookColumns: ProColumns<Webhook>[] = [
         <Popover
           title={null}
           trigger="hover"
-          content={row.event
+          content={row.events
             .map((_) => EventMap[_])
             .map((_, index) => (
               <Tag key={index}>{_}</Tag>
             ))}
         >
           <div>
-            <Tag>{row.event?.[0]}</Tag>
-            {row.event?.length > 1 && '...'}
+            <Tag>{row.events?.[0]}</Tag>
+            {row.events?.length > 1 && '...'}
           </div>
         </Popover>
       )
@@ -67,7 +74,11 @@ export const WebhookColumns: ProColumns<Webhook>[] = [
           if (_ === '*') {
             return <Typography.Text key={index}>全部</Typography.Text>
           } else {
-            return <Typography.Text key={index}>{_ ? _.displayName : '空'}</Typography.Text>
+            return (
+              <Typography.Text key={index}>
+                {_ ? row?.schemaBriefs?.find((brief) => brief.collection === _)?.displayName : '空'}
+              </Typography.Text>
+            )
           }
         })}
       </Space>
@@ -96,7 +107,9 @@ export const WebhookColumns: ProColumns<Webhook>[] = [
   },
 ]
 
-export const WebhookLogColumns: ProColumns<Webhook & { action: string; result: string }>[] = [
+export const WebhookLogColumns: ProColumns<
+  Webhook & { schemaBriefs?: Array<WebHookTableSchemaBriefs>; action: string; result: string }
+>[] = [
   {
     title: 'Webhook 名称',
     dataIndex: 'name',
@@ -130,7 +143,11 @@ export const WebhookLogColumns: ProColumns<Webhook & { action: string; result: s
           if (_ === '*') {
             return <Typography.Text key={index}>全部</Typography.Text>
           } else {
-            return <Typography.Text key={index}>{_ ? _.displayName : '空'}</Typography.Text>
+            return (
+              <Typography.Text key={index}>
+                {_ ? row?.schemaBriefs?.find((brief) => brief.collection === _)?.displayName : '空'}
+              </Typography.Text>
+            )
           }
         })}
       </Space>
@@ -179,9 +196,9 @@ export const WebhookLogColumns: ProColumns<Webhook & { action: string; result: s
     valueType: 'dateTime',
     width: 200,
   },
-  {
-    title: '操作者',
-    dataIndex: ['triggerUser', 'username'],
-    width: 200,
-  },
+  // {
+  //   title: '操作者',
+  //   dataIndex: ['triggerUser', 'username'],
+  //   width: 200,
+  // },
 ]

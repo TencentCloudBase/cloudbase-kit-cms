@@ -8,6 +8,7 @@ import { getProjectName } from '@/utils'
 import { WebhookForm } from './WebhookForm'
 import WebhookExecLog from './WebhookExecLog'
 import { WebhookColumns } from './columns'
+import { getSchemas } from '@/services/schema'
 
 const { TabPane } = Tabs
 
@@ -38,6 +39,8 @@ export default (): React.ReactNode => {
     const { current, pageSize } = params
 
     try {
+      const schemas = await getSchemas(projectName)
+
       const { data = [], total } = await getWebhooks(projectName, {
         sort,
         filter,
@@ -45,8 +48,20 @@ export default (): React.ReactNode => {
         page: current,
       })
 
+      /** 根据后端数据中的collections计算对应的displayName列表 */
+      const tabData = data?.map((item: Webhook) => {
+        if (!(item?.collections?.length > 0)) {
+          return { ...item }
+        }
+        const schemaBriefs = item?.collections?.map((name) => {
+          const schema = schemas?.data?.find((schemaItem) => schemaItem.collectionName === name)
+          return { collection: name, displayName: schema?.displayName }
+        })
+        return { ...item, schemaBriefs }
+      })
+
       return {
-        data,
+        data: tabData,
         total,
         success: true,
       }

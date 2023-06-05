@@ -7,6 +7,7 @@ import { Modal, Form, message, Input, Space, Button, Typography, Tooltip, Switch
 import { QuestionCircleTwoTone } from '@ant-design/icons'
 import { getSystemConfigurableFields, getProjectName } from '@/utils'
 import { IS_KIT_MODE } from '@/kitConstants'
+import { DATABASE_RULES } from '@/constants'
 
 const { TextArea } = Input
 
@@ -181,8 +182,8 @@ const SchemaEditor: React.FC = () => {
           rules={[
             { required: true, message: '请输入模型名称！' },
             {
-              pattern: /^[a-z0-9A-Z_-]+$/,
-              message: '只能使用英文字母、数字、-、_ 等符号',
+              pattern: DATABASE_RULES.table.rule,
+              message: DATABASE_RULES.table.message,
             },
           ]}
         >
@@ -245,8 +246,8 @@ const SchemaEditor: React.FC = () => {
               rules={[
                 { required: true, message: '请输入创建时间字段名！' },
                 {
-                  message: '只能使用英文字母、数字、-、_ 等符号',
-                  pattern: /^[a-z0-9A-Z_-]+$/,
+                  pattern: DATABASE_RULES.param.rule,
+                  message: DATABASE_RULES.param.message,
                 },
               ]}
             >
@@ -265,8 +266,8 @@ const SchemaEditor: React.FC = () => {
               rules={[
                 { required: true, message: '请输入创建时间字段名！' },
                 {
-                  message: '只能使用英文字母、数字、-、_ 等符号',
-                  pattern: /^[a-z0-9A-Z_-]+$/,
+                  pattern: DATABASE_RULES.param.rule,
+                  message: DATABASE_RULES.param.message,
                 },
               ]}
             >

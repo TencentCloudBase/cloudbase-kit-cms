@@ -11,7 +11,7 @@ interface Webhook {
    */
   type: 'http' | 'function'
 
-  event: string[]
+  events: string[]
 
   collections: (Schema & '*')[]
 

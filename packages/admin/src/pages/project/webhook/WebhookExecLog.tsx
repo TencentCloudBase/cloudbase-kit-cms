@@ -3,6 +3,7 @@ import ProTable, { ProColumns } from '@ant-design/pro-table'
 import { getWebhookLog } from '@/services/webhook'
 import { getProjectName } from '@/utils'
 import { WebhookLogColumns } from './columns'
+import { getSchemas } from '@/services/schema'
 
 const columns: ProColumns<any>[] = WebhookLogColumns.map((item) => ({
   ...item,
@@ -25,6 +26,8 @@ export default () => {
     const { current, pageSize } = params
 
     try {
+      const schemas = await getSchemas(projectName)
+
       const { data = [], total } = await getWebhookLog(projectName, {
         sort: {
           timestamp: 'descend',
@@ -34,8 +37,20 @@ export default () => {
         page: current,
       })
 
+      /** 根据后端数据中的collections计算对应的displayName列表 */
+      const tabData = data?.map((item: Webhook) => {
+        if (!(item?.collections?.length > 0)) {
+          return { ...item }
+        }
+        const schemaBriefs = item?.collections?.map((name) => {
+          const schema = schemas?.data?.find((schemaItem) => schemaItem.collectionName === name)
+          return { collection: name, displayName: schema?.displayName }
+        })
+        return { ...item, schemaBriefs }
+      })
+
       return {
-        data,
+        data: tabData,
         total,
         success: true,
       }

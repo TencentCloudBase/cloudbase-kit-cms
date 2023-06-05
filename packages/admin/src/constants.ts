@@ -21,3 +21,15 @@ export const codeMessage = {
   503: '服务不可用，服务器暂时过载或维护。',
   504: '网关超时。',
 }
+
+/** 数据库字段规则和描述 */
+export const DATABASE_RULES = {
+  table: {
+    rule: /^[a-z0-9A-Z][a-z0-9A-Z_-]*$/,
+    message: '只能使用英文字母、数字、_、-等符号，且只能以英文字母或数字开头',
+  },
+  param: {
+    rule: /^[a-z0-9A-Z][a-z0-9A-Z_]*$/,
+    message: '只能使用英文字母、数字、_等符号，且只能以英文字母或数字开头',
+  },
+}

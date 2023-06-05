@@ -29,6 +29,7 @@ import {
 } from '@/utils'
 import { getFieldDefaultValueInput, getFieldFormItem } from './Field'
 import { IS_KIT_MODE } from '@/kitConstants'
+import { DATABASE_RULES } from '@/constants'
 
 const { TextArea } = Input
 const { Text } = Typography
@@ -274,8 +275,8 @@ export const SchemaFieldEditorModal: React.FC<{
           rules={[
             { required: true, message: '请输入数据库名称！' },
             {
-              message: '字段名只能使用英文字母、数字、-、_ 等符号',
-              pattern: /^[a-z0-9A-Z-][a-z0-9A-Z-_]*$/,
+              pattern: DATABASE_RULES.param.rule,
+              message: `字段名${DATABASE_RULES.param.message}`,
             },
           ]}
         >
