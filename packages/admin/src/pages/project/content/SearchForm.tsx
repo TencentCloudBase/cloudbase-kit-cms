@@ -20,6 +20,7 @@ import { ContentCtx } from 'typings/store'
 import { calculateFieldWidth, getProjectName } from '@/utils'
 import { updateSchemaFiled } from '@/services/schema'
 import { useRequest } from 'umi'
+import { IS_KIT_MODE } from '@/kitConstants'
 
 const { Option } = Select
 
@@ -44,6 +45,13 @@ const ContentTableSearchForm: React.FC<{
   // 删除字段
   const deleteField = useCallback((field: SchemaField) => {
     ctx.mr.removeSearchField(field)
+
+    // 在删除单个搜索框时触发一次查询
+    if (IS_KIT_MODE) {
+      const newSearchParams = { ...(ctx.state?.searchParams || {}) }
+      delete newSearchParams?.[field.name]
+      onSearch(newSearchParams)
+    }
   }, [])
 
   // 保存检索条件
@@ -86,23 +94,25 @@ const ContentTableSearchForm: React.FC<{
               <Tooltip title="删除所有检索条件">
                 <Button
                   onClick={() => {
-                    const modal = Modal.confirm({
-                      title: '是否删除保存的检索条件？',
-                      onCancel: () => {
-                        modal.destroy()
-                      },
-                      onOk: async () => {
-                        try {
-                          await updateSchemaFiled(projectName, schema.collectionName, {
-                            searchFields: [],
-                          })
-                          message.success('重置检索条件成功！')
-                          ctx.mr.getContentSchemas(projectName)
-                        } catch (error) {
-                          message.error('重置检索条件失败！')
-                        }
-                      },
-                    })
+                    if (!IS_KIT_MODE) {
+                      const modal = Modal.confirm({
+                        title: '是否删除保存的检索条件？',
+                        onCancel: () => {
+                          modal.destroy()
+                        },
+                        onOk: async () => {
+                          try {
+                            await updateSchemaFiled(projectName, schema.collectionName, {
+                              searchFields: [],
+                            })
+                            message.success('重置检索条件成功！')
+                            ctx.mr.getContentSchemas(projectName)
+                          } catch (error) {
+                            message.error('重置检索条件失败！')
+                          }
+                        },
+                      })
+                    }
                     // 重置检索条件
                     ctx.mr.clearSearchField()
                     onSearch({})
@@ -136,7 +146,7 @@ const ContentTableSearchForm: React.FC<{
               </Button>
 
               {/* 仅字段不同时，才显示保存按钮 */}
-              {!isFieldSame(searchFields, schema.searchFields) && (
+              {!IS_KIT_MODE && !isFieldSame(searchFields, schema.searchFields) && (
                 <Tooltip title="保存检索条件，下次直接搜索">
                   <Button type="primary" loading={loading} onClick={saveSearchFields}>
                     保存

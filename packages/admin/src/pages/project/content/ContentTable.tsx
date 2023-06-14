@@ -82,7 +82,11 @@ export const ContentTable: React.FC<{
    * 搜索字段下拉菜单
    */
   const searchableFields = useMemo(
-    () => getSchemaAllFields(currentSchema)?.filter((filed) => !negativeTypes.includes(filed.type)),
+    () =>
+      getSchemaAllFields(currentSchema)?.filter(
+        (filed: SchemaField) =>
+          !negativeTypes.includes(filed.type) && IS_KIT_MODE && filed.name !== '_id'
+      ),
     [currentSchema]
   )
   const searchFieldMenu = useMemo(
@@ -172,13 +176,11 @@ export const ContentTable: React.FC<{
   // 表格 ToolBar
   const toolBarRender = useMemo(
     () => [
-      !IS_KIT_MODE && (
-        <Dropdown overlay={searchFieldMenu} key="search">
-          <Button type="primary">
-            <FilterOutlined /> 增加检索
-          </Button>
-        </Dropdown>
-      ),
+      <Dropdown overlay={searchFieldMenu} key="search">
+        <Button type="primary">
+          <FilterOutlined /> 增加检索
+        </Button>
+      </Dropdown>,
       <Button
         key="button"
         type="primary"
