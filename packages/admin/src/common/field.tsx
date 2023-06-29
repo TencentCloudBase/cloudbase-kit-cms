@@ -133,7 +133,7 @@ export const DOC_ID_FIELD = {
 /**
  * 系统默认字段
  */
-export const SYSTEM_FIELDS: any[] = [
+export const SYSTEM_FIELDS = [
   DOC_ID_FIELD,
   {
     displayName: '创建时间',

@@ -32,6 +32,9 @@ export default (): React.ReactNode => {
   // 模型导入导出
   const [exportVisible, setExportVisible] = useState(false)
   const [importVisible, setImportVisible] = useState(false)
+  const [exportCodeVisible, setExportCodeVisible] = useState(false)
+
+  const devMode = window?.getDevMode?.() || false
 
   // 获取 Schema 列表
   useEffect(() => {
@@ -60,6 +63,12 @@ export default (): React.ReactNode => {
             <ImportOutlined />
             导入模型
           </Button>
+          {devMode && (
+            <Button type="primary" onClick={() => setExportCodeVisible(true)}>
+              <ExportOutlined />
+              导出代码
+            </Button>
+          )}
         </Space>
       }
     >
@@ -81,6 +90,11 @@ export default (): React.ReactNode => {
       {ctx.state.schemaEditVisible && <SchemaEditor />}
       <SchemaExportModal visible={exportVisible} onClose={() => setExportVisible(false)} />
       <SchemaImportModal visible={importVisible} onClose={() => setImportVisible(false)} />
+      <SchemaExportModal
+        visible={exportCodeVisible}
+        onClose={() => setExportCodeVisible(false)}
+        isExportCode={true}
+      />
     </PageContainer>
   )
 }

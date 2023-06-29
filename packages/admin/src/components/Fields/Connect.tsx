@@ -188,11 +188,18 @@ const getConnectFieldDisplayText = (doc: any, schemas: Schema[], field: SchemaFi
 
   // 关联的字段，又是一个关联类型，则展示关联字段关联的字段
   // A -> B -> C
+  let text = null
   if (connectedFieldInfo?.connectResource) {
-    return getValueOrSlug(doc[connectField]?.[connectedFieldInfo.connectField])
+    text = getValueOrSlug(doc[connectField]?.[connectedFieldInfo.connectField])
   } else {
-    return getValueOrSlug(doc[connectField])
+    text = getValueOrSlug(doc[connectField])
   }
+
+  // 如果引用的field是个json之类的object，直接就会渲染异常，这里我们把特殊的显示格式化为字符串
+  if (IS_KIT_MODE && typeof text === 'object') {
+    return JSON.stringify(text)
+  }
+  return text
 }
 
 /**

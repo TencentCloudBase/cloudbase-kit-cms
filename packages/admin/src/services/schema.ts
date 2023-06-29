@@ -164,5 +164,6 @@ export async function importSchemasData(projectName: string, schemas: Partial<Sc
   return tcbRequest(`/projects/${projectName}/collections/import`, {
     method: 'POST',
     data: pureSchemas,
+    timeout: 30000, // 批量导入数据较大时后端可能校验时间较久，这里调整下timeout时间为30秒
   })
 }

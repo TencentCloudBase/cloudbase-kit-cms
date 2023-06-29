@@ -248,6 +248,7 @@ export async function contentBatchImport(
   return tcbRequest(`/projects/${projectName}/collections/${collectionName}/contents/import`, {
     method: 'POST',
     data,
+    timeout: 30000, // 批量导入数据较大时后端可能校验时间较久，这里调整下timeout时间为30秒
   })
 }
 

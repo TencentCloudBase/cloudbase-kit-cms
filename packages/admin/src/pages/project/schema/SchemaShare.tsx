@@ -2,7 +2,7 @@ import { useConcent } from 'concent'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Modal, Typography, Upload, message, Checkbox, Space, Alert } from 'antd'
 import { SchmeaCtx, ContentCtx } from 'typings/store'
-import { getProjectName, random, readFile, saveContentToFile } from '@/utils'
+import { getProjectName, random, readFile, saveContentToFile, saveFile } from '@/utils'
 import { InboxOutlined } from '@ant-design/icons'
 import {
   createSchema,
@@ -11,6 +11,7 @@ import {
   importSchemasData,
 } from '@/services/schema'
 import { IS_KIT_MODE } from '@/kitConstants'
+import { getInterfaceCodeWithSchemas } from './utils'
 
 const { Title, Paragraph } = Typography
 const { Dragger } = Upload
@@ -22,7 +23,8 @@ const CheckboxGroup = Checkbox.Group
 export const SchemaExportModal: React.FC<{
   visible: boolean
   onClose: () => void
-}> = ({ visible, onClose }) => {
+  isExportCode?: boolean
+}> = ({ visible, onClose, isExportCode }) => {
   const ctx = useConcent<{}, SchmeaCtx>('schema')
 
   const {
@@ -97,12 +99,17 @@ export const SchemaExportModal: React.FC<{
         } else {
           setGettingFields(true)
           let exportErr = null
-          const exportRsp = await getExportSchemasData(projectName, selectedSchemas).catch((e) => {
+          const exportRsp = await getExportSchemasData(
+            projectName,
+            isExportCode ? schemas.map((item) => item.collectionName) : selectedSchemas
+          ).catch((e) => {
             exportErr = e
           })
           setGettingFields(false)
           if (!exportErr) {
-            exportData = exportRsp
+            exportData = isExportCode
+              ? getInterfaceCodeWithSchemas(exportRsp as Schema[], selectedSchemas)
+              : exportRsp
           }
         }
 
@@ -111,8 +118,11 @@ export const SchemaExportModal: React.FC<{
           return
         }
 
-        const fileName = `schema-export-${random(8)}.json`
-        saveContentToFile(JSON.stringify(exportData), fileName)
+        if (isExportCode) {
+          saveFile(new Blob([exportData], { type: 'text' }), `schema-export-${random(8)}.d.ts`)
+        } else {
+          saveContentToFile(JSON.stringify(exportData), `schema-export-${random(8)}.json`)
+        }
 
         message.success('导出模型成功！')
         onClose()
