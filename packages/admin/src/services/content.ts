@@ -78,7 +78,7 @@ export async function getContents(
   options?: Options
 ): Promise<{ total: number; data: any[] }> {
   // 将老接口的参数进行缩减
-  const { page = 1, pageSize = 10, sort, fuzzyFilter } = options || {}
+  const { page = 1, pageSize = 10, sort, fuzzyFilter, filter } = options || {}
   const data: any = {
     limit: pageSize,
     offset: (page - 1) * pageSize,
@@ -86,8 +86,9 @@ export async function getContents(
   if (Object.keys(sort || {}).length > 0) {
     data.sort = JSON.stringify(sort)
   }
-  if (fuzzyFilter && Object.keys(fuzzyFilter).length > 0) {
-    data.search = JSON.stringify(fuzzyFilter)
+  const searchParams = { ...(fuzzyFilter || {}), ...(filter || {}) } // fuzzyFilter：通过“添加索引”生成的条件，filter：表格内筛选按钮生成的筛选条件
+  if (searchParams && Object.keys(searchParams).length > 0) {
+    data.search = JSON.stringify(searchParams)
   }
   const res = await tcbRequest(`/projects/${projectName}/collections/${collectionName}/contents`, {
     method: 'GET',
