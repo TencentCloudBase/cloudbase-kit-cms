@@ -206,7 +206,7 @@ const SchemaEditor: React.FC = () => {
         <Form.Item label="描述信息" name="description">
           <TextArea
             showCount
-            maxLength={30}
+            maxLength={200}
             placeholder="描述信息，会展示在对应内容的管理页面顶部，可用于内容提示，支持 HTML 片段"
           />
         </Form.Item>

@@ -317,7 +317,7 @@ export const SchemaFieldEditorModal: React.FC<{
         </Form.Item>
 
         <Form.Item label="描述" name="description">
-          <TextArea showCount maxLength={30} placeholder="字段描述，如博客文章标题" />
+          <TextArea showCount maxLength={200} placeholder="字段描述，如博客文章标题" />
         </Form.Item>
 
         {hasDefaultValue(selectedField) ? null : (
