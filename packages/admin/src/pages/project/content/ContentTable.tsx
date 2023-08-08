@@ -84,8 +84,7 @@ export const ContentTable: React.FC<{
   const searchableFields = useMemo(
     () =>
       getSchemaAllFields(currentSchema)?.filter(
-        (filed: SchemaField) =>
-          !negativeTypes.includes(filed.type) && IS_KIT_MODE && filed.name !== '_id'
+        (filed: SchemaField) => !negativeTypes.includes(filed.type)
       ),
     [currentSchema]
   )

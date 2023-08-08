@@ -126,7 +126,7 @@ export const DOC_ID_FIELD = {
   type: 'String',
   isSystem: true,
   copyable: true,
-  isHidden: true,
+  // isHidden: true,
   description: 'CMS 系统字段，请勿随意修改',
 }
 
