@@ -72,12 +72,9 @@ export async function getAllContents(
   return firstRsp
 }
 
-export async function getContents(
-  projectName: string,
-  collectionName: string,
+function contentQueryFormat(
   options?: Options
-): Promise<{ total: number; data: any[] }> {
-  // 将老接口的参数进行缩减
+): { limit: number; offset: number; sort?: string; search?: string } {
   const { page = 1, pageSize = 10, sort, fuzzyFilter, filter } = options || {}
   const data: any = {
     limit: pageSize,
@@ -90,6 +87,16 @@ export async function getContents(
   if (searchParams && Object.keys(searchParams).length > 0) {
     data.search = JSON.stringify(searchParams)
   }
+  return data
+}
+
+export async function getContents(
+  projectName: string,
+  collectionName: string,
+  options?: Options
+): Promise<{ total: number; data: any[] }> {
+  // 将老接口的参数进行缩减
+  const data = contentQueryFormat(options)
   const res = await tcbRequest(`/projects/${projectName}/collections/${collectionName}/contents`, {
     method: 'GET',
     data,
@@ -231,9 +238,19 @@ export async function createExportMigrateJob(
 }
 
 /** 数据批量导出 */
-export async function contentBatchExport(projectName: string, collectionName: string) {
+export async function contentBatchExport(
+  projectName: string,
+  collectionName: string,
+  options?: Omit<Options, 'page' | 'pageSize'>
+) {
+  const data = contentQueryFormat(options)
+  // @ts-ignore
+  delete data.limit
+  // @ts-ignore
+  delete data.offset
   return tcbRequest(`/projects/${projectName}/collections/${collectionName}/contents/export`, {
     method: 'GET',
+    data,
   })
 }
 

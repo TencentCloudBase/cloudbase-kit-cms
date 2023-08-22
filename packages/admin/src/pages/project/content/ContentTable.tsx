@@ -6,7 +6,12 @@ import React, { useRef, useCallback, useMemo } from 'react'
 import ProTable, { ActionType, ProColumns } from '@ant-design/pro-table'
 import { Button, Modal, message, Space, Row, Col, Dropdown, Menu, Select } from 'antd'
 import { PlusOutlined, DeleteOutlined, FilterOutlined, ExportOutlined } from '@ant-design/icons'
-import { getContents, deleteContent, batchDeleteContent } from '@/services/content'
+import {
+  getContents,
+  deleteContent,
+  batchDeleteContent,
+  contentBatchExport,
+} from '@/services/content'
 import { getProjectName, getSchemaAllFields, redirectTo } from '@/utils'
 import { ContentCtx } from 'typings/store'
 import { SortOrder } from 'antd/lib/table/interface'
@@ -323,11 +328,9 @@ const getTableAlertRender = (projectName: string, currentSchema: Schema, tableRe
             >
               <DeleteOutlined /> 删除文档
             </Button>
-            {!IS_KIT_MODE && (
-              <Button size="small" type="primary" onClick={() => setState({ visible: true })}>
-                <ExportOutlined /> 导出数据
-              </Button>
-            )}
+            <Button size="small" type="primary" onClick={() => setState({ visible: true })}>
+              <ExportOutlined /> 导出数据
+            </Button>
           </Space>
         </Col>
       </Row>
@@ -337,7 +340,12 @@ const getTableAlertRender = (projectName: string, currentSchema: Schema, tableRe
         onCancel={closeModal}
         onOk={async () => {
           try {
-            await exportData(selectedRows, fileType)
+            const data = await contentBatchExport(projectName, currentSchema.collectionName, {
+              fuzzyFilter: { _id: selectedRowKeys },
+            })
+            await exportData(data, fileType)
+
+            // await exportData(selectedRows, fileType)
             message.success('导出数据成功')
           } catch (error) {
             message.error('导出数据失败')
@@ -345,6 +353,7 @@ const getTableAlertRender = (projectName: string, currentSchema: Schema, tableRe
           closeModal()
         }}
       >
+        <div>将导出已选中的数据</div>
         <Select defaultValue="json" onChange={(v) => setState({ fileType: v })} className="mt-3">
           <Option value="csv">导出为 CSV 文件</Option>
           <Option value="json">导出为 JSON 文件</Option>
