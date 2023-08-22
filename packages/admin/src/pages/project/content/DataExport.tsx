@@ -29,7 +29,7 @@ const DataExport: React.FC<{ schema: Schema; collectionName: string; searchParam
   const { run: getExportData, loading } = useRequest(
     async () => {
       if (IS_KIT_MODE) {
-        const data = await contentBatchExport(projectName, collectionName)
+        const data = await contentBatchExport(projectName, collectionName, { fuzzyFilter })
         await exportData(data, fileType)
       } else {
         // 存在搜索条件时，只导出搜索结果，最大 1000 条
@@ -103,9 +103,9 @@ const DataExport: React.FC<{ schema: Schema; collectionName: string; searchParam
       >
         {searchKeys?.length ? <span>将导出满足搜索条件的数据</span> : <span>将导出全量数据</span>}
         <Alert type="warning" message="最多支持导出 1000 条数据" className="mt-3" />
-        {IS_KIT_MODE && searchKeys?.length ? (
+        {/* {IS_KIT_MODE && searchKeys?.length ? (
           <Alert type="warning" message="检索情况下最多支持导出 1000 条数据" className="mt-3" />
-        ) : null}
+        ) : null} */}
       </Modal>
     </>
   )
