@@ -3,7 +3,7 @@ import { request, history } from 'umi'
 import { notification } from 'antd'
 import { RequestOptionsInit } from 'umi-request'
 import { uploadFilesToHosting } from '@/services/apis'
-import { codeMessage, RESOURCE_PREFIX } from '@/constants'
+import { codeMessage, CONFIG_PLATRORM_ENUM, RESOURCE_PREFIX } from '@/constants'
 import defaultSettings from '../../config/defaultSettings'
 import { isDevEnv, random } from './common'
 import { getDay, getFullDate, getMonth, getYear } from './date'
@@ -16,6 +16,9 @@ import { getInitialState } from '@/app'
 import { ApiUrls } from '@cloudbase/oauth/src/auth/consts'
 import { appendCaptchaTokenToURL } from '@/pages/login/captcha'
 import moment from 'moment'
+import { GlobalCtx } from 'typings/store'
+import { GET_PROJECTS_PATH } from '@/services/project'
+import { getCurrentProject } from './route'
 
 interface IntegrationRes {
   statusCode: number
@@ -273,10 +276,10 @@ export async function tcbRequest<T = any>(
   options: RequestOptionsInit & { skipErrorHandler?: boolean } = {}
 ): Promise<T> {
   if (IS_KIT_MODE && !/\/auth\/v1\//.test(url)) {
-    const { envId, region, kitId } = window.TcbCmsConfig || {}
+    const { envId, region, kitId, platform } = window.TcbCmsConfig || {}
     const reqParam = reqParamFormat(url, { ...(options || {}) })
     let result: any
-    if (IS_CUSTOM_ENV) {
+    if (IS_CUSTOM_ENV && platform !== CONFIG_PLATRORM_ENUM.WEDA_TOOL) {
       await getInitialState()
       result = await cloudbase.kits().request({
         url: `/cms/${kitId}/v1${reqParam.pureUrl}`,
@@ -305,14 +308,36 @@ export async function tcbRequest<T = any>(
       }
       return result.result
     } else {
+      /** 微搭工具箱集成的应用，属于uin级别，对应的Project结构中记录了其所在的环境和kitid */
+      let tarEnvId = envId
+      let tarKitId = kitId
+      if (platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL && url !== GET_PROJECTS_PATH) {
+        const currentProject: Project = getCurrentProject()
+        if (!currentProject) {
+          history.replace('')
+        }
+        tarEnvId = currentProject?.envId || envId
+        tarKitId = currentProject?.kitId || kitId
+      }
+
       // 重置url
       // eslint-disable-next-line no-param-reassign
-      url = `https://tcb.${region}.kits.tcloudbasegateway.com/cms/${kitId}/v1${url}`
+      url = `https://${tarEnvId || envId}.${region}.kits.tcloudbasegateway.com/cms/${
+        tarKitId || kitId
+      }/v1${url}`
+
+      const addHeaders = {}
+      if (platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL) {
+        const wedaToolCredentials = auth?.oauth2client?.getCredentialsSync?.()
+        if (wedaToolCredentials?.token_type && wedaToolCredentials?.access_token) {
+          addHeaders.Authorization = `${wedaToolCredentials.token_type} ${wedaToolCredentials.access_token}`
+        }
+      }
 
       result = await fetch(reqParamFormat(url, { ...(options || {}) }).url, {
         method: reqParam.method,
         body: !reqParam?.isGetMethod && !!options?.data ? JSON.stringify(options.data) : undefined,
-        headers: { ...(options.headers || {}), 'Content-Type': 'application/json' },
+        headers: { ...(options.headers || {}), ...addHeaders, 'Content-Type': 'application/json' },
       })
       const resultJson = await result.json()
       const data = parseIntegrationRes({
@@ -333,7 +358,7 @@ export async function tcbRequest<T = any>(
           await logout()
           await getInitialState()
         } else {
-          apiErrorHandler(result, url)
+          apiErrorHandler(resultJson || result, url)
           // notification.error({
           //   message: '请求错误',
           //   description: `服务异常：${result.status}: ${url}`,

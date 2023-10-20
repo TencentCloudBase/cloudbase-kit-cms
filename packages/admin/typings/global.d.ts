@@ -59,6 +59,13 @@ interface ITcbCmsConfing {
     key: string
     title: string
   }[]
+  platform?: string // 该字段为微搭工具箱平台创建，旧平台暂无逻辑，微搭工具箱平台为wedaTool
+  // platform==wedaTool时，该结构生效
+  wedaToolCfg?: {
+    appId: string // 微搭应用登录页注入的应用id，如app-cms
+    configVersion: string // 微搭应用登录页query中携带的配置文件标识
+    homePath: string // 微搭应用通用登录成功后回跳链接
+  }
 }
 
 interface MicroApp {

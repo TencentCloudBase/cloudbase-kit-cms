@@ -7,6 +7,7 @@ import { PlusCircleOutlined } from '@ant-design/icons'
 import { redirectTo } from '@/utils'
 import { useConcent } from 'concent'
 import { GlobalCtx } from 'typings/store'
+import { CONFIG_PLATRORM_ENUM } from '@/constants'
 
 const { Title, Paragraph } = Typography
 
@@ -88,7 +89,7 @@ export default function ProjectListView({
           </Tooltip>
         </ListItem>
       ))}
-      {isAdmin && (
+      {isAdmin && window?.TcbCmsConfig?.platform !== CONFIG_PLATRORM_ENUM.WEDA_TOOL && (
         <ListItem className="flex items-center py-5 px-5" onClick={() => onCreateProject()}>
           <div className="w-2/4 flex items-center">
             <CreateIcon className="create-icon">

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import { useSetState } from 'react-use'
 import { useRequest, useAccess } from 'umi'
@@ -13,6 +13,9 @@ import ProjectCardView from './ProjectCardView'
 import HomePageContainer from './HomePageContainer'
 import './index.less'
 import { IS_KIT_MODE } from '@/kitConstants'
+import { useConcent } from 'concent'
+import { GlobalCtx } from 'typings/store'
+import { CONFIG_PLATRORM_ENUM } from '@/constants'
 
 // 设置图标颜色
 setTwoToneColor('#0052d9')
@@ -44,6 +47,7 @@ export default function () {
 
 const Home: React.FC<RouteContextType> = (props) => {
   const { isMobile } = props
+  const ctx = useConcent<{}, GlobalCtx>('global')
 
   // 项目分组
   const { groups } = window.TcbCmsConfig
@@ -61,6 +65,10 @@ const Home: React.FC<RouteContextType> = (props) => {
   let { data = [], loading } = useRequest(() => getProjects(), {
     refreshDeps: [reload],
   })
+
+  useEffect(() => {
+    ctx.setState({ currentProject: undefined })
+  }, [])
 
   // 展示创建项目的弹窗
   const showCreatingModal = () =>
@@ -117,6 +125,10 @@ const Home: React.FC<RouteContextType> = (props) => {
 
       {!isAdmin && !data?.length && (
         <Empty description="项目为空，请联系您的管理员为您分配项目！" />
+      )}
+
+      {window?.TcbCmsConfig?.platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL && !data?.length && (
+        <Empty description="暂未创建项目，请返回云后台进入CMS详情页后创建项目" />
       )}
 
       {currentLayout === 'card' ? (

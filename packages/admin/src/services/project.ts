@@ -7,10 +7,12 @@ export async function getProject(projectName: string): Promise<{ data: Project }
   return { data: res }
 }
 
+export const GET_PROJECTS_PATH = '/projects'
+
 export async function getProjects() {
   return tcbRequest<{
     data: Project[]
-  }>('/projects', {
+  }>(GET_PROJECTS_PATH, {
     method: 'GET',
   })
 }

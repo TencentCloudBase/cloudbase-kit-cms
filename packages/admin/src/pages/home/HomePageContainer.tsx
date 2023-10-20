@@ -7,6 +7,7 @@ import { getCmsConfig } from '@/utils'
 import Notice from './Notice'
 import pkg from '../../../package.json'
 import './index.less'
+import { CONFIG_PLATRORM_ENUM } from '@/constants'
 
 const { Header, Content, Footer } = Layout
 
@@ -29,27 +30,29 @@ const HomePageContainer: React.FC<{ loading: boolean; isMobile?: boolean }> = ({
 }) => {
   return (
     <Layout className="home">
-      <Header className="header">
-        <div className="left">
-          <img className="logo" src={getCmsConfig('cmsLogo')} alt="logo" />
-          <h1 className="title">{getCmsConfig('cmsTitle')}</h1>
-        </div>
-        <div className="right">
-          {SERVER_MODE && !isMobile && (
-            <Tooltip title="当前 CMS 以容器服务模式运行">
-              <CodeSandboxOutlined
-                style={{
-                  ...IconStyle,
-                  marginTop: '3px',
-                  marginRight: '10px',
-                }}
-              />
-            </Tooltip>
-          )}
-          {window.TcbCmsConfig.disableNotice ? null : <Notice />}
-          <AvatarDropdown />
-        </div>
-      </Header>
+      {window?.TcbCmsConfig?.platform !== CONFIG_PLATRORM_ENUM?.WEDA_TOOL && (
+        <Header className="header">
+          <div className="left">
+            <img className="logo" src={getCmsConfig('cmsLogo')} alt="logo" />
+            <h1 className="title">{getCmsConfig('cmsTitle')}</h1>
+          </div>
+          <div className="right">
+            {SERVER_MODE && !isMobile && (
+              <Tooltip title="当前 CMS 以容器服务模式运行">
+                <CodeSandboxOutlined
+                  style={{
+                    ...IconStyle,
+                    marginTop: '3px',
+                    marginRight: '10px',
+                  }}
+                />
+              </Tooltip>
+            )}
+            {window.TcbCmsConfig.disableNotice ? null : <Notice />}
+            <AvatarDropdown />
+          </div>
+        </Header>
+      )}
 
       <Content className="content">
         {loading ? (

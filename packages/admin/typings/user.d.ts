@@ -60,6 +60,12 @@ interface Project {
    * 分组
    */
   group?: string[]
+
+  /** 所属环境id */
+  envId?: string
+
+  /** 对应无头套件id（无头套件版使用） */
+  kitId?: string
 }
 
 /**

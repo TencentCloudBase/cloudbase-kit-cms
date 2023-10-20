@@ -6,6 +6,7 @@ import { PlusCircleTwoTone } from '@ant-design/icons'
 import { redirectTo } from '@/utils'
 import { useConcent } from 'concent'
 import { GlobalCtx } from 'typings/store'
+import { CONFIG_PLATRORM_ENUM } from '@/constants'
 
 const { Title, Paragraph } = Typography
 
@@ -97,7 +98,9 @@ export default function ProjectListView({
           </div>
         </ProjectItem>
       ))}
-      {isAdmin && <CreateProject onClick={onCreateProject} />}
+      {isAdmin && window?.TcbCmsConfig?.platform !== CONFIG_PLATRORM_ENUM.WEDA_TOOL && (
+        <CreateProject onClick={onCreateProject} />
+      )}
     </ProjectContainer>
   )
 }

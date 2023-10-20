@@ -22,6 +22,13 @@ export const codeMessage = {
   504: '网关超时。',
 }
 
+/** cms所处平台枚举，对应window?.TcbCmsConfig?.platform字段 */
+export enum CONFIG_PLATRORM_ENUM {
+  Q_CLOUD = 'qcloud',
+  KIT = 'kit',
+  WEDA_TOOL = 'wedaTool',
+}
+
 /** 数据库字段规则和描述 */
 export const DATABASE_RULES = {
   table: {

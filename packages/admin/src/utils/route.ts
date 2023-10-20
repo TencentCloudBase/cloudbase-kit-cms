@@ -37,6 +37,11 @@ export const getProjectName = () => {
   return query?.pname || state?.global?.currentProject?.projectName || ''
 }
 
+export const getCurrentProject = () => {
+  const state: any = getState()
+  return state?.global?.currentProject
+}
+
 /**
  * 跳转到项目某个路径
  */
