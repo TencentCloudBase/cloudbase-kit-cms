@@ -49,3 +49,34 @@ export async function deleteProject(projectName: string) {
     method: 'DELETE',
   })
 }
+
+/**
+ * （weida控制台）获取图片上载信息
+ */
+export async function getStorageUploadInfo(objectId: string) {
+  return tcbRequest('/projects/requestStorage', {
+    method: 'POST',
+    data: {
+      path:'/v1/storages/get-objects-upload-info',
+      data:[{
+        objectId,
+      }],
+    },
+  })
+}
+
+/**
+ * （weida控制台）获取图片临时下载信息
+ */
+export async function getStorageDownloadInfo(param: { cloudObjectId: string, maxAge?: number }[]): Promise<{
+  cloudObjectId: string
+  downloadUrl: string
+}[]> {
+  return tcbRequest('/projects/requestStorage', {
+    method: 'POST',
+    data: {
+      path:'/v1/storages/get-objects-download-info',
+      data:param.map(item => ({ ...item, maxAge: item?.maxAge || 120 }))
+    },
+  })
+}

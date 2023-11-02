@@ -19,6 +19,7 @@ import moment from 'moment'
 import { GlobalCtx } from 'typings/store'
 import { GET_PROJECTS_PATH } from '@/services/project'
 import { getCurrentProject } from './route'
+import { getStorageDownloadInfo, getStorageUploadInfo } from '@/services/project'
 
 interface IntegrationRes {
   statusCode: number
@@ -162,7 +163,7 @@ export async function loginWithPassword(
     })
     await tempAuth.authApi.signIn({ username, password, captcha_token } as any)
     location.href = location.origin + location.pathname
-    return new Promise((resolve, reject) => {})
+    return new Promise((resolve, reject) => { })
   }
   // 登陆
   // await auth.signInWithUsernameAndPassword(username, password)
@@ -322,9 +323,8 @@ export async function tcbRequest<T = any>(
 
       // 重置url
       // eslint-disable-next-line no-param-reassign
-      url = `https://${tarEnvId || envId}.${region}.kits.tcloudbasegateway.com/cms/${
-        tarKitId || kitId
-      }/v1${url}`
+      url = `https://${tarEnvId || envId}.${region}.kits.tcloudbasegateway.com/cms/${tarKitId || kitId
+        }/v1${url}`
 
       const addHeaders = {}
       if (platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL) {
@@ -542,7 +542,7 @@ export async function uploadFile(options: {
   // 上传文件到云存储Kit版
   if (IS_KIT_MODE) {
     // 获取上载目录
-    const { envId, region } = window.TcbCmsConfig || {}
+    const { envId, region, platform } = window.TcbCmsConfig || {}
     if (!IS_CUSTOM_ENV) {
       const credentials = await getCredentials()
       const preUploadRsp = await fetch(
@@ -592,6 +592,8 @@ export async function uploadFile(options: {
         url: preRspJson.data.download_url,
       }
     } else {
+      const objectId = `kit-cms-upload/${moment().format('YYYY-MM-DD')}/${Math.floor(Math.random() * 1000) + 1000
+        }${Date.now()}_${file.name}`;
       const attachedInfos: {
         authorization: string
         cloudObjectId: string
@@ -600,20 +602,20 @@ export async function uploadFile(options: {
         token: string
         uploadUrl: string
         cloudObjectMeta: string
-      }[] = await cloudbase.storage().request({
-        method: 'POST',
-        url: `${STORAGE_BASE_URL}/get-objects-upload-info`,
-        body: [
-          {
-            objectId: `kit-cms-upload/${moment().format('YYYY-MM-DD')}/${
-              Math.floor(Math.random() * 1000) + 1000
-            }${Date.now()}_${file.name}`,
-          },
-        ] as any,
-        query: {},
-        // enableAbort: true,
-        timeout: 3000,
-      })
+      }[] = platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL
+          ? await getStorageUploadInfo(objectId)
+          : await cloudbase.storage().request({
+            method: 'POST',
+            url: `${STORAGE_BASE_URL}/get-objects-upload-info`,
+            body: [
+              {
+                objectId,
+              },
+            ] as any,
+            query: {},
+            // enableAbort: true,
+            timeout: 3000,
+          })
 
       /** 本地调试如果上传文件报跨域错误，可以在https://console.cloud.tencent.com/cos/bucket找到对应的cos桶，设置跨域策略（如：http://localhost:8000） */
       const attachedInfo = attachedInfos?.[0]
@@ -685,20 +687,22 @@ export async function kitBatchGetTempFileURL(
   }[]
 > {
   if (!fileIds?.length) return []
-  const { envId, region } = window.TcbCmsConfig || {}
+  const { envId, region, platform } = window.TcbCmsConfig || {}
   if (IS_KIT_MODE) {
     const param = fileIds.map((idItem) => ({ cloudObjectId: idItem, maxAge: 120 }))
     const dataList: {
       cloudObjectId: string
       downloadUrl: string
-    }[] = await cloudbase.storage().request({
-      method: 'POST',
-      url: `${STORAGE_BASE_URL}/get-objects-download-info`,
-      body: param as any,
-      query: {},
-      // enableAbort: true,
-      timeout: 3000,
-    })
+    }[] = platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL
+        ? await getStorageDownloadInfo(param)
+        : await cloudbase.storage().request({
+          method: 'POST',
+          url: `${STORAGE_BASE_URL}/get-objects-download-info`,
+          body: param as any,
+          query: {},
+          // enableAbort: true,
+          timeout: 3000,
+        })
 
     if (dataList?.length !== fileIds.length) {
       throw new Error(`图片地址获取错误`)
@@ -830,6 +834,6 @@ export const getHttpAccessPath = () => {
   return isDevEnv()
     ? defaultSettings.globalPrefix
     : SERVER_MODE
-    ? `https://${window.TcbCmsConfig.containerAccessPath}${defaultSettings.globalPrefix}`
-    : `https://${window.TcbCmsConfig.cloudAccessPath}${defaultSettings.globalPrefix}`
+      ? `https://${window.TcbCmsConfig.containerAccessPath}${defaultSettings.globalPrefix}`
+      : `https://${window.TcbCmsConfig.cloudAccessPath}${defaultSettings.globalPrefix}`
 }
