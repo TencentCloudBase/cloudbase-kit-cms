@@ -363,6 +363,7 @@ export async function tcbRequest<T = any>(
           //   message: '请求错误',
           //   description: `服务异常：${result.status}: ${url}`,
           // })
+          return Promise.reject(resultJson?.message || result?.message);
         }
       }
       return data.result
