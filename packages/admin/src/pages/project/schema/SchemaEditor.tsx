@@ -137,7 +137,7 @@ const SchemaEditor: React.FC = () => {
     return schemaEditAction === 'create'
       ? ['cloud', 'system'].includes(localStorage.getItem(DATABASE_TYPE_KEY) as string)
         ? localStorage.getItem(DATABASE_TYPE_KEY)
-        : 'system'
+        : 'cloud'
       : currentSchema?.databaseType
   }, [schemaEditAction, currentSchema])
 
