@@ -60,7 +60,7 @@ export default (): React.ReactNode => {
         </code>
         <div style={{ marginTop: 20 }}>
           {`Open API地址可以前往 `}
-          <Link href={`/#/project/setting${search ? `?${search}` : ''}`}>项目设置</Link>
+          <Link href={`#/project/setting${search ? `?${search}` : ''}`}>项目设置</Link>
           {` 参考文档：`}
         </div>
         <div>

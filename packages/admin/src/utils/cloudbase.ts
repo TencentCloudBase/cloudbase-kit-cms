@@ -353,7 +353,7 @@ export async function tcbRequest<T = any>(
 
       // 错误处理
       if (data?.code !== 'NORMAL') {
-        if (result?.code === 'INVALID_TOKEN') {
+        if (data?.code === 'INVALID_TOKEN') {
           // 这种情况是token格式错误（比如无头cms需要group字段，用auth-sdk其实是可以登陆的，但我们这里要限制只能使用kit-cms对应group）
           await logout()
           await getInitialState()

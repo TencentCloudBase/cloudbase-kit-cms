@@ -218,7 +218,7 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
 
   const initialValues = useMemo(
     () => ({
-      path: setting.apiAccessPath || project.apiAccessPath,
+      path: setting?.apiAccessPath || project?.apiAccessPath,
     }),
     [project]
   )
@@ -275,7 +275,7 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
                 <Button
                   type="link"
                   onClick={() => {
-                    const path = setting.apiAccessPath || initialValues.path
+                    const path = setting?.apiAccessPath || initialValues?.path || ""
 
                     // eslint-disable-next-line no-constant-condition
                     if (!path && false) {
@@ -283,7 +283,7 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
                     } else {
                       // copyToClipboard(`https://${accessDomain}${path}/v1.0/${schema.collectionOldName}`)
                       copyToClipboard(
-                        `https://${window.TcbCmsConfig.envId}.${window.TcbCmsConfig.region}.kits.tcloudbasegateway.com/cms/${window.TcbCmsConfig.kitId}/v1/open-api/projects/${projectName}/collections/${schema.collectionName}/contents?limit=10&offset=0`
+                        `https://${project?.envId || window.TcbCmsConfig.envId}.${window.TcbCmsConfig.region}.kits.tcloudbasegateway.com/cms/${project?.kitId || window.TcbCmsConfig.kitId}/v1/open-api/projects/${projectName}/collections/${schema.collectionName}/contents?limit=10&offset=0`
                       )
                       message.success('复制成功')
                     }
@@ -354,7 +354,7 @@ export default (): React.ReactElement => {
     return <Skeleton active />
   }
 
-  if (!project?.enableApiAccess && !setting.enableApiAccess) {
+  if (!!project && !project?.enableApiAccess && !setting.enableApiAccess) {
     return (
       <>
         <Alert
