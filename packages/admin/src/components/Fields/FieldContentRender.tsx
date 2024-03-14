@@ -11,6 +11,7 @@ import { IObjectRender } from './Object'
 import { IMedia } from './Media'
 import { InfoCircleTwoTone } from '@ant-design/icons'
 import { FieldErrorCom } from '@/pages/project/content/columns'
+import { isWedaTool } from '@/common/adapters/weda-tool'
 
 const { Text } = Typography
 
@@ -29,7 +30,8 @@ export function getFieldRender(field: SchemaField) {
         index: number,
         action: any
       ): React.ReactNode | React.ReactNode[] => (
-        <Tooltip title={text}>
+        // 微搭工具箱Tooltip组件会和weda-page-module-sdk组件冲突
+        <Tooltip title={isWedaTool()?undefined:text}>
           <Text
             ellipsis
             style={{ width }}
@@ -53,7 +55,7 @@ export function getFieldRender(field: SchemaField) {
         index: number,
         action: any
       ): React.ReactNode | React.ReactNode[] => (
-        <Tooltip title={text}>
+        <Tooltip title={isWedaTool()?undefined:text}>
           <Text ellipsis style={{ width }}>
             {text}
           </Text>
@@ -225,7 +227,7 @@ export function getFieldRender(field: SchemaField) {
 export const FiledFormatError = (props: { width?: number; text: React.ReactNode }) => {
   const { width, text } = props
   return (
-    <Tooltip title={text}>
+    <Tooltip title={isWedaTool()?undefined:text}>
       <Text ellipsis underline style={{ width, userSelect: 'none', color: 'red' }}>
         数据格式错误
         {/* <InfoCircleTwoTone twoToneColor="red"/> */}

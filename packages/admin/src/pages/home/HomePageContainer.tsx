@@ -8,6 +8,7 @@ import Notice from './Notice'
 import pkg from '../../../package.json'
 import './index.less'
 import { CONFIG_PLATRORM_ENUM } from '@/constants'
+import { isWedaTool } from '@/common/adapters/weda-tool'
 
 const { Header, Content, Footer } = Layout
 
@@ -30,7 +31,7 @@ const HomePageContainer: React.FC<{ loading: boolean; isMobile?: boolean }> = ({
 }) => {
   return (
     <Layout className="home">
-      {window?.TcbCmsConfig?.platform !== CONFIG_PLATRORM_ENUM?.WEDA_TOOL && (
+      {!isWedaTool() && (
         <Header className="header">
           <div className="left">
             <img className="logo" src={getCmsConfig('cmsLogo')} alt="logo" />

@@ -16,6 +16,7 @@ import { IS_KIT_MODE } from '@/kitConstants'
 import { useConcent } from 'concent'
 import { GlobalCtx } from 'typings/store'
 import { CONFIG_PLATRORM_ENUM } from '@/constants'
+import { isWedaTool } from '@/common/adapters/weda-tool'
 
 // 设置图标颜色
 setTwoToneColor('#0052d9')
@@ -127,7 +128,7 @@ const Home: React.FC<RouteContextType> = (props) => {
         <Empty description="项目为空，请联系您的管理员为您分配项目！" />
       )}
 
-      {window?.TcbCmsConfig?.platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL && !data?.length && (
+      {isWedaTool() && !data?.length && (
         <Empty description="暂未创建项目，请返回云后台进入CMS详情页后创建项目" />
       )}
 

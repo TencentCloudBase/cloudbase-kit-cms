@@ -7,6 +7,7 @@ import { redirectTo } from '@/utils'
 import { useConcent } from 'concent'
 import { GlobalCtx } from 'typings/store'
 import { CONFIG_PLATRORM_ENUM } from '@/constants'
+import { isWedaTool } from '@/common/adapters/weda-tool'
 
 const { Title, Paragraph } = Typography
 
@@ -98,7 +99,7 @@ export default function ProjectListView({
           </div>
         </ProjectItem>
       ))}
-      {isAdmin && window?.TcbCmsConfig?.platform !== CONFIG_PLATRORM_ENUM.WEDA_TOOL && (
+      {isAdmin && !isWedaTool() && (
         <CreateProject onClick={onCreateProject} />
       )}
     </ProjectContainer>

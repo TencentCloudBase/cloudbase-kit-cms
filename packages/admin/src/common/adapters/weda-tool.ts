@@ -1,8 +1,13 @@
 import { CONFIG_PLATRORM_ENUM } from '@/constants'
 
+/** 当前是否为微搭平台 */
+export function isWedaTool() {
+  return window?.TcbCmsConfig?.platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL;
+}
+
 /** 微搭工具箱平台适配 */
 export async function initWedaTool() {
-  if (window?.TcbCmsConfig?.platform !== CONFIG_PLATRORM_ENUM.WEDA_TOOL) {
+  if (!isWedaTool()) {
     return
   }
   window?.TcbCmsConfig?.envId &&

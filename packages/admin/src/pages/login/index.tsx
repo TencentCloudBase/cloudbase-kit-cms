@@ -8,6 +8,7 @@ import { LoginParamsType } from '@/services/login'
 import styles from './index.less'
 import { defaultOpenURIWithCallback, getCaptchaToken, saveCaptchaToken } from './captcha'
 import { CONFIG_PLATRORM_ENUM } from '@/constants'
+import { isWedaTool } from '@/common/adapters/weda-tool'
 
 const { Title } = Typography
 const FormItem = Form.Item
@@ -68,7 +69,7 @@ const Login: React.FC<{}> = () => {
     return <Spin />
   }
 
-  if (window?.TcbCmsConfig?.platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL) {
+  if (isWedaTool()) {
     location.href = `${location.origin}/__auth/?env_id=${window?.TcbCmsConfig?.envId}&client_id=${
       window?.TcbCmsConfig?.clientId
     }&app_id=${window?.TcbCmsConfig?.wedaToolCfg?.appId}&redirect_uri=${encodeURIComponent(

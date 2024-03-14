@@ -18,13 +18,13 @@ import {
 import * as models from './models'
 import { getSetting } from './services/global'
 import { IS_KIT_MODE } from './kitConstants'
-import { initWedaTool } from './common/adapters/weda-tool'
+import { initWedaTool, isWedaTool } from './common/adapters/weda-tool'
 
 /** 无头cms没有user概念，这里mock一个 */
 const MOCK_USER_ID = '_mock_user_id'
 
 /** 微搭工具箱相关适配 */
-if (window?.TcbCmsConfig?.platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL) {
+if (isWedaTool()) {
   initWedaTool()
 }
 

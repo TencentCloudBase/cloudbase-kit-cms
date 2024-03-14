@@ -20,6 +20,7 @@ import { getProjectName } from '@/utils'
 import defaultSettings from '../../config/defaultSettings'
 import './index.less'
 import { CONFIG_PLATRORM_ENUM } from '@/constants'
+import { isWedaTool } from '@/common/adapters/weda-tool'
 
 // 设置图标颜色
 setTwoToneColor('#0052d9')
@@ -176,7 +177,7 @@ const Layout: React.FC<any> = (props) => {
   return (
     <ProLayout
       className={
-        window?.TcbCmsConfig?.platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL
+        isWedaTool()
           ? 'wedaToolLayout'
           : undefined
       }

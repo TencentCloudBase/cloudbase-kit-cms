@@ -16,10 +16,10 @@ import { getInitialState } from '@/app'
 import { ApiUrls } from '@cloudbase/oauth/src/auth/consts'
 import { appendCaptchaTokenToURL } from '@/pages/login/captcha'
 import moment from 'moment'
-import { GlobalCtx } from 'typings/store'
 import { GET_PROJECTS_PATH } from '@/services/project'
 import { getCurrentProject } from './route'
 import { getStorageDownloadInfo, getStorageUploadInfo } from '@/services/project'
+import { isWedaTool } from '@/common/adapters/weda-tool'
 
 interface IntegrationRes {
   statusCode: number
@@ -277,10 +277,10 @@ export async function tcbRequest<T = any>(
   options: RequestOptionsInit & { skipErrorHandler?: boolean } = {}
 ): Promise<T> {
   if (IS_KIT_MODE && !/\/auth\/v1\//.test(url)) {
-    const { envId, region, kitId, platform } = window.TcbCmsConfig || {}
+    const { envId, region, kitId } = window.TcbCmsConfig || {}
     const reqParam = reqParamFormat(url, { ...(options || {}) })
     let result: any
-    if (IS_CUSTOM_ENV && platform !== CONFIG_PLATRORM_ENUM.WEDA_TOOL) {
+    if (IS_CUSTOM_ENV && !isWedaTool()) {
       await getInitialState()
       result = await cloudbase.kits().request({
         url: `/cms/${kitId}/v1${reqParam.pureUrl}`,
@@ -312,7 +312,7 @@ export async function tcbRequest<T = any>(
       /** 微搭工具箱集成的应用，属于uin级别，对应的Project结构中记录了其所在的环境和kitid */
       let tarEnvId = envId
       let tarKitId = kitId
-      if (platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL && url !== GET_PROJECTS_PATH) {
+      if (isWedaTool() && url !== GET_PROJECTS_PATH) {
         const currentProject: Project = getCurrentProject()
         if (!currentProject) {
           history.replace('')
@@ -326,8 +326,8 @@ export async function tcbRequest<T = any>(
       url = `https://${tarEnvId || envId}.${region}.kits.tcloudbasegateway.com/cms/${tarKitId || kitId
         }/v1${url}`
 
-      const addHeaders = {}
-      if (platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL) {
+      const addHeaders: any = {}
+      if (isWedaTool()) {
         const wedaToolCredentials = auth?.oauth2client?.getCredentialsSync?.()
         if (wedaToolCredentials?.token_type && wedaToolCredentials?.access_token) {
           addHeaders.Authorization = `${wedaToolCredentials.token_type} ${wedaToolCredentials.access_token}`
@@ -543,7 +543,7 @@ export async function uploadFile(options: {
   // 上传文件到云存储Kit版
   if (IS_KIT_MODE) {
     // 获取上载目录
-    const { envId, region, platform } = window.TcbCmsConfig || {}
+    const { envId, region } = window.TcbCmsConfig || {}
     if (!IS_CUSTOM_ENV) {
       const credentials = await getCredentials()
       const preUploadRsp = await fetch(
@@ -603,7 +603,7 @@ export async function uploadFile(options: {
         token: string
         uploadUrl: string
         cloudObjectMeta: string
-      }[] = platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL
+      }[] = isWedaTool()
           ? await getStorageUploadInfo(objectId)
           : await cloudbase.storage().request({
             method: 'POST',
@@ -688,13 +688,13 @@ export async function kitBatchGetTempFileURL(
   }[]
 > {
   if (!fileIds?.length) return []
-  const { envId, region, platform } = window.TcbCmsConfig || {}
+  const { envId, region } = window.TcbCmsConfig || {}
   if (IS_KIT_MODE) {
     const param = fileIds.map((idItem) => ({ cloudObjectId: idItem, maxAge: 120 }))
     const dataList: {
       cloudObjectId: string
       downloadUrl: string
-    }[] = platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL
+    }[] = isWedaTool()
         ? await getStorageDownloadInfo(param)
         : await cloudbase.storage().request({
           method: 'POST',
