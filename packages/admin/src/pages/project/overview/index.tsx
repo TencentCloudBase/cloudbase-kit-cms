@@ -44,7 +44,11 @@ export default (): React.ReactNode => {
         <div>
           如您在使用过程中有任何问题，也欢迎加入CMS交流群，与官方团队近距离交流。加群二维码：
         </div>
-        <img src="./img/weWork.jpg" style={{ height: 200, width: 200 }} />
+        {/* <img src="./img/weWork.png" style={{ height: 200, width: 200 }} /> */}
+        <img
+          src="https://cloudcache.tencent-cloud.com/qcloud/ui/static/static_source_business/9a5968c1-2892-44bf-9a6f-8b1976eeb0fe.png"
+          style={{ height: 200, width: 200 }}
+        />
         <h3 style={{ marginTop: 20, fontWeight: 'bold' }}>新版CMS接入指引：</h3>
         <div>新版CMS的数据可以通过Open API获取，以小程序为例：</div>
         <code
