@@ -16,6 +16,7 @@ import {
   Checkbox,
   Modal,
   Typography,
+  Tooltip,
 } from 'antd'
 import { useConcent } from 'concent'
 import { ContentCtx, GlobalCtx } from 'typings/store'
@@ -235,6 +236,7 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
         <div key={index} className="mb-5">
           <Space>
             <span>{schema.displayName}</span>
+            <Tooltip title={!surrpotApi(schema)?'当前模型数据存储在云开发环境的数据库，无法通过OpenAPI获取数据':''}>
             <Checkbox
               disabled={!surrpotApi(schema)}
               checked={readableCollections?.includes(schema.collectionName)}
@@ -245,7 +247,7 @@ const ApiPermission: React.FC<{ project: Project; onReload: Function }> = ({
               }}
             >
               允许访问
-            </Checkbox>
+            </Checkbox></Tooltip>
             {false && (
               <Checkbox
                 checked={modifiableCollections?.includes(schema.collectionOldName)}

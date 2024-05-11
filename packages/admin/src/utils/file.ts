@@ -36,8 +36,10 @@ export const downloadFileFromUrl = (url: string, fileName: string) => {
   a.click()
 
   setTimeout(function () {
-    document.body.removeChild(a)
-    window.URL.revokeObjectURL(url)
+    try{
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url)
+    }catch{}
   }, 0)
 }
 
