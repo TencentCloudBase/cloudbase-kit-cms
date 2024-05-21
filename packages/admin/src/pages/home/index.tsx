@@ -12,10 +12,8 @@ import ProjectListView from './ProjectListView'
 import ProjectCardView from './ProjectCardView'
 import HomePageContainer from './HomePageContainer'
 import './index.less'
-import { IS_KIT_MODE } from '@/kitConstants'
 import { useConcent } from 'concent'
 import { GlobalCtx } from 'typings/store'
-import { CONFIG_PLATRORM_ENUM } from '@/constants'
 import { isWedaTool } from '@/common/adapters/weda-tool'
 
 // 设置图标颜色
@@ -128,8 +126,11 @@ const Home: React.FC<RouteContextType> = (props) => {
         <Empty description="项目为空，请联系您的管理员为您分配项目！" />
       )}
 
-      {isWedaTool() && !data?.length && (
-        <Empty description="暂未创建项目，请返回云后台进入CMS详情页后创建项目" />
+      {/* 多环境情况下，有些平台需要给与特殊提示，让其在相应平台去创建 */}
+      {isAdmin && window?.TcbCmsConfig?.multiEnv && !data?.length && (
+        <>
+          {isWedaTool() && <Empty description="暂未创建项目，请返回云后台进入CMS详情页后创建项目" />}
+        </>
       )}
 
       {currentLayout === 'card' ? (
@@ -162,7 +163,7 @@ export const ProjectCreateModal: React.FC<{
 }> = ({ visible, onClose, onSuccess }) => {
   const { run, loading } = useRequest(
     async (data: any) => {
-      await createProject(data)
+      await createProject(data);
       onSuccess()
     },
     {

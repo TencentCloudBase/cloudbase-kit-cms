@@ -20,7 +20,9 @@ import ContentTableSearchForm from './SearchForm'
 import { getTableColumns } from './columns'
 import DataImport from './DataImport'
 import DataExport from './DataExport'
-import { IS_KIT_MODE } from '@/kitConstants'
+import { IS_KIT_MODE, TEMP_SAVE_CONDITIONS } from '@/kitConstants'
+import { updateSearchConditions } from '@/services/schema'
+import { SearchConditions } from 'typings/field'
 
 const { Option } = Select
 
@@ -104,7 +106,17 @@ export const ContentTable: React.FC<{
             return
           }
           // 添加字段
-          field && ctx.mr.addSearchField(field)
+          // field && ctx.mr.addSearchField(field)
+          if(field){
+            ctx.mr.addSearchField(field)
+            ctx.setState({
+              searchParams: {...(searchParams||{}),[key]:undefined},
+            })
+            if(TEMP_SAVE_CONDITIONS){
+              const tarConditions=(searchFields||[]).concat(field).map(fieldItem=>({key:fieldItem.name,value:JSON.stringify(searchParams?.[fieldItem.name])} as SearchConditions))
+              updateSearchConditions(projectName,currentSchema.collectionName,tarConditions);
+            }
+          }
         }}
       >
         {searchableFields.map((field) => (
@@ -112,7 +124,7 @@ export const ContentTable: React.FC<{
         ))}
       </Menu>
     ),
-    [currentSchema, searchFields]
+    [currentSchema, searchFields,searchParams]
   )
 
   // 缓存 Table Columns 配置

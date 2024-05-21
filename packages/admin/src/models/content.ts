@@ -34,7 +34,7 @@ export default {
     },
     removeSearchField(field: any, state: ContentState) {
       const { searchFields } = state
-      const index = searchFields.findIndex((_) => _.id === field.id)
+      const index = searchFields.findIndex((_) => _._id === field._id)
       searchFields.splice(index, 1)
       return {
         searchFields,

@@ -5,14 +5,28 @@ export function isWedaTool() {
   return window?.TcbCmsConfig?.platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL;
 }
 
+/** 是否为多数据环境公用同一个cms静态托管页面（即只有一份配置） */
+export function isMultiDataEnv() {
+  return isWedaTool() && !window?.TcbCmsConfig?.wedaToolCfg?.tcbEnvId;
+}
+
 /** 微搭工具箱平台适配 */
 export async function initWedaTool() {
   if (!isWedaTool()) {
     return
   }
+
+  // 微搭应用菜单栏sdk
+  await requireJsSdk(
+    'https://qbase.cdn-go.cn/lcap/lcap-resource-cdngo/-/0.1.4/_files/static/weda-page-module-sdk/weda.tools.sdk.js'
+  )
+
+  // 这段逻辑必须确保weda.tools.sdk成功加载
   window?.TcbCmsConfig?.envId &&
     window?.['_wedaModuleSdk'] &&
     (window['_wedaModuleSdk'].envId = window.TcbCmsConfig.envId)
+
+  // 微搭应用通用sdk，用来在window上挂载cloudbase
   if (!window?.cloudbase) {
     const { region, envId, clientId } = window.TcbCmsConfig
     await requireJsSdk(

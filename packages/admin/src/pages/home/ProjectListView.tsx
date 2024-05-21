@@ -8,7 +8,7 @@ import { redirectTo } from '@/utils'
 import { useConcent } from 'concent'
 import { GlobalCtx } from 'typings/store'
 import { CONFIG_PLATRORM_ENUM } from '@/constants'
-import { isWedaTool } from '@/common/adapters/weda-tool'
+import { isMultiDataEnv, isWedaTool } from '@/common/adapters/weda-tool'
 
 const { Title, Paragraph } = Typography
 
@@ -90,7 +90,7 @@ export default function ProjectListView({
           </Tooltip>
         </ListItem>
       ))}
-      {isAdmin && !isWedaTool() && (
+      {isAdmin && !(isWedaTool()&&window?.TcbCmsConfig?.multiEnv) && (
         <ListItem className="flex items-center py-5 px-5" onClick={() => onCreateProject()}>
           <div className="w-2/4 flex items-center">
             <CreateIcon className="create-icon">

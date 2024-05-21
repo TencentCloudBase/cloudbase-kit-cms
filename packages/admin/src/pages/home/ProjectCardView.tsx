@@ -99,7 +99,7 @@ export default function ProjectListView({
           </div>
         </ProjectItem>
       ))}
-      {isAdmin && !isWedaTool() && (
+      {isAdmin && !(isWedaTool()&&window?.TcbCmsConfig?.multiEnv) && (
         <CreateProject onClick={onCreateProject} />
       )}
     </ProjectContainer>

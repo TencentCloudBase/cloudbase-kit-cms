@@ -1,5 +1,6 @@
-import { IS_KIT_MODE } from '@/kitConstants'
+import { IS_KIT_MODE, TEMP_SAVE_CONDITIONS } from '@/kitConstants'
 import { tcbRequest } from '@/utils'
+import { SearchConditions } from 'typings/field'
 
 export async function getSchemas(projectName?: string): Promise<{ data: Schema[] }> {
   if (IS_KIT_MODE) {
@@ -165,5 +166,48 @@ export async function importSchemasData(projectName: string, schemas: Partial<Sc
     method: 'POST',
     data: pureSchemas,
     timeout: 30000, // 批量导入数据较大时后端可能校验时间较久，这里调整下timeout时间为30秒
+  })
+}
+
+const tempConditions:{[key:string]:{conditions:SearchConditions[]}}={};
+
+/** 获取远端的搜索信息 */
+export async function getSearchConditions(
+  projectName: string,
+  collectionName: string,
+): Promise<{conditions:SearchConditions[]}> {
+  if(TEMP_SAVE_CONDITIONS){
+    return new Promise((resolve)=>{
+      setTimeout(()=>{
+        const key=`${projectName}--${collectionName}`;
+        const conditions=tempConditions?.[key]?.conditions||[];
+        resolve({conditions});
+      },50)
+    })
+  }
+  return tcbRequest(`/projects/${projectName}/collections/${collectionName}/conditions`, {
+    method: 'GET',
+  })
+}
+
+/** 保存远端的搜索信息 */
+export async function updateSearchConditions(
+  projectName: string,
+  collectionName: string,
+  conditions:SearchConditions[],
+): Promise<{}> {
+  if(TEMP_SAVE_CONDITIONS){
+    return new Promise((resolve)=>{
+      setTimeout(()=>{
+        const key=`${projectName}--${collectionName}`;
+        tempConditions[key]={conditions};
+        resolve({});
+        // console.error("conditions::",conditions);
+      },50)
+    })
+  }
+  return tcbRequest(`/projects/${projectName}/collections/${collectionName}/conditions`, {
+    method: 'POST',
+    data: {conditions},
   })
 }

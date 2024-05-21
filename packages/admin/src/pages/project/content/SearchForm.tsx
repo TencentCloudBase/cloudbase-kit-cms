@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { DeleteTwoTone } from '@ant-design/icons'
 import {
   Form,
@@ -17,10 +17,11 @@ import {
 import { IDatePicker, IConnectEditor, IDateRangePicker } from '@/components/Fields'
 import { useConcent } from 'concent'
 import { ContentCtx } from 'typings/store'
-import { calculateFieldWidth, getProjectName } from '@/utils'
-import { updateSchemaFiled } from '@/services/schema'
-import { useRequest } from 'umi'
-import { IS_KIT_MODE } from '@/kitConstants'
+import { calculateFieldWidth, getProjectName, getSchemaSystemFields } from '@/utils'
+import { getSearchConditions, updateSchemaFiled, updateSearchConditions } from '@/services/schema'
+import { IS_KIT_MODE, TEMP_SAVE_CONDITIONS } from '@/kitConstants'
+import { Schema, SchemaField, SearchConditions } from 'typings/field'
+import { useRequest } from '@umijs/hooks'
 
 const { Option } = Select
 
@@ -43,40 +44,91 @@ const ContentTableSearchForm: React.FC<{
   const { searchFields, searchParams } = ctx.state
 
   // 删除字段
-  const deleteField = useCallback((field: SchemaField) => {
+  const deleteField = (field: SchemaField) => {
     ctx.mr.removeSearchField(field)
 
     // 在删除单个搜索框时触发一次查询
     if (IS_KIT_MODE) {
       const newSearchParams = { ...(ctx.state?.searchParams || {}) }
       delete newSearchParams?.[field.name]
-      onSearch(newSearchParams)
+      ctx.setState({
+        searchParams: newSearchParams,
+      })
+      if(Object.keys(newSearchParams).length === 0){
+        saveSearchFields({projectName,collectionName:schema.collectionName})
+        onSearch({}) // 如果都删除了，触发一次搜索
+      }
+      autoSaveFields();
     }
-  }, [])
+  }
+
+  /** 查询远端记录的搜索条件 */
+  const {loading:getting}=useRequest(
+    async ()=>getSearchConditions(projectName,schema.collectionName),
+    {
+      ready:!!projectName&&!!schema?.collectionName&&IS_KIT_MODE,
+      refreshDeps:[projectName,schema],
+      onSuccess:(res)=>{
+        const sysFields=getSchemaSystemFields(schema);
+        const allFields=[...sysFields,...(schema?.fields||[])];
+        const {conditions}=res as {conditions:SearchConditions[]};
+        const showConditions=(conditions||[]).filter(conItem=>!!allFields.find(fieldItem=>fieldItem.name===conItem.key));
+        // const tarFields=allFields.filter(fieldItem=>!!(conditions||[]).find(conItem=>fieldItem.name===conItem.key));
+        const tarFields=showConditions.map(conItem=>allFields.find(fieldItem=>fieldItem.name===conItem.key)).filter(conItem=>!!conItem); // 按照showConditions的顺序计算目标fields
+        const tarParam=showConditions.reduce((dic,item)=>{
+          dic[item.key]=item.value;
+          try{
+            if(typeof item?.value === 'string'){
+              dic[item.key]=JSON.parse(item?.value);
+            }
+          }catch{}
+          return dic;
+        },{})
+        
+        // 设定state中的搜索条件
+        ctx.mr.setSearchFields(tarFields);
+        ctx.setState({
+          searchParams: tarParam,
+        })
+        form.setFieldsValue(tarParam)
+      },
+    }
+  );
 
   // 保存检索条件
-  const { run: saveSearchFields, loading } = useRequest(
-    async () => {
-      await updateSchemaFiled(projectName, schema.collectionName, {
-        searchFields,
-      })
-      ctx.mr.getContentSchemas(projectName)
+  const { run: saveSearchFields, loading:saving } = useRequest(
+    async (param:{projectName:string,collectionName:string,searchParams?:any,searchFields?:SchemaField[]}) => {
+      if(IS_KIT_MODE){
+        const tarConditions=(param?.searchFields||[]).map(fieldItem=>({key:fieldItem.name,value:JSON.stringify(param?.searchParams?.[fieldItem.name])} as SearchConditions))
+        await updateSearchConditions(param.projectName,param.collectionName,tarConditions);
+      }
+      else {
+        await updateSchemaFiled(projectName, schema.collectionName, {
+          searchFields,
+        })
+        ctx.mr.getContentSchemas(projectName)
+      }
     },
     {
       manual: true,
-      onSuccess: () => message.success('保存检索条件成功！'),
+      onSuccess: () => !TEMP_SAVE_CONDITIONS && message.success('保存检索条件成功！'),
       onError: (e) => message.error(e.message || '保存检索条件失败！'),
     }
   )
 
+  const autoSaveFields=()=>{
+    TEMP_SAVE_CONDITIONS && projectName && schema?.collectionName && saveSearchFields({projectName,collectionName:schema.collectionName,searchParams:form.getFieldsValue(),searchFields});
+  };
+
   return (
     <div>
-      {searchFields.length ? (
+      {!getting&&searchFields.length ? (
         <Form
           form={form}
           layout="inline"
           initialValues={searchParams}
           style={{ marginTop: '15px' }}
+          onValuesChange={()=>autoSaveFields()}
           onFinish={(v: any) => onSearch(v)}
         >
           <Row>
@@ -94,28 +146,31 @@ const ContentTableSearchForm: React.FC<{
               <Tooltip title="删除所有检索条件">
                 <Button
                   onClick={() => {
-                    if (!IS_KIT_MODE) {
+                    const onOk = async () => {
+                      try {
+                        ctx.mr.clearSearchField()
+                        ctx.setState({
+                          searchParams: {},
+                        })
+                        saveSearchFields({projectName,collectionName:schema.collectionName});
+                        onSearch({})
+                        TEMP_SAVE_CONDITIONS && message.success('重置检索条件成功！')
+                        // ctx.mr.getContentSchemas(projectName)
+                      } catch (error) {
+                        message.error('重置检索条件失败！')
+                      }
+                    }
+                    if(TEMP_SAVE_CONDITIONS){
+                      onOk()
+                    } else {
                       const modal = Modal.confirm({
                         title: '是否删除保存的检索条件？',
                         onCancel: () => {
                           modal.destroy()
                         },
-                        onOk: async () => {
-                          try {
-                            await updateSchemaFiled(projectName, schema.collectionName, {
-                              searchFields: [],
-                            })
-                            message.success('重置检索条件成功！')
-                            ctx.mr.getContentSchemas(projectName)
-                          } catch (error) {
-                            message.error('重置检索条件失败！')
-                          }
-                        },
+                        onOk: onOk,
                       })
                     }
-                    // 重置检索条件
-                    ctx.mr.clearSearchField()
-                    onSearch({})
                   }}
                 >
                   删除
@@ -133,6 +188,7 @@ const ContentTableSearchForm: React.FC<{
                       () => {
                         form.resetFields()
                         onSearch({})
+                        autoSaveFields();
                       }
                     )
                   }}
@@ -146,9 +202,9 @@ const ContentTableSearchForm: React.FC<{
               </Button>
 
               {/* 仅字段不同时，才显示保存按钮 */}
-              {!IS_KIT_MODE && !isFieldSame(searchFields, schema.searchFields) && (
+              {!TEMP_SAVE_CONDITIONS && (
                 <Tooltip title="保存检索条件，下次直接搜索">
-                  <Button type="primary" loading={loading} onClick={saveSearchFields}>
+                  <Button type="primary" loading={getting||saving} onClick={()=>saveSearchFields({projectName,collectionName:schema.collectionName,searchParams:form.getFieldsValue(),searchFields})}>
                     保存
                   </Button>
                 </Tooltip>

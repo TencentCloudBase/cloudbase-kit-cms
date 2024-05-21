@@ -8,6 +8,8 @@ interface ITcbCmsConfing {
   history: 'hash' | 'browser'
   // 环境 Id
   envId: string
+  /** 当前cms（静态页面文件）是否对应多环境（数据），即是否为大租户模式 */
+  multiEnv?: boolean;
   // 应用clientId
   clientId: string
   // 套件id

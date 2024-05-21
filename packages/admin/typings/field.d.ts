@@ -178,3 +178,9 @@ interface Schema {
   /** 模型数据库类型 */
   databaseType?: 'system' | 'cloud' // system:中心化数据库（后端数据库，用户不可见）；cloud：云开发数据库（用户在云开发控制台可见）
 }
+
+/** 数据搜索条件 */
+export interface SearchConditions{
+  key:string;
+  value?:string; // 搜索框内输入值的json编码
+}

@@ -225,7 +225,7 @@ const SchemaEditor: React.FC = () => {
               }
             />
             <div style={{ opacity: 0.5 }}>
-              <div>默认关闭，数据存储在CMS中心化数据库，可通过OpenAPI获取数据。</div>
+              <div>如果关闭，数据存储在CMS中心化数据库，可通过OpenAPI获取数据。</div>
               <div>如果开启，模型数据则存储在云开发环境的数据库，且无法通过OpenAPI获取数据。</div>
             </div>
           </>

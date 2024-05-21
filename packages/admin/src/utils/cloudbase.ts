@@ -280,7 +280,7 @@ export async function tcbRequest<T = any>(
     const { envId, region, kitId } = window.TcbCmsConfig || {}
     const reqParam = reqParamFormat(url, { ...(options || {}) })
     let result: any
-    if (IS_CUSTOM_ENV && !isWedaTool()) {
+    if (/* IS_CUSTOM_ENV && !isWedaTool() */false) {
       await getInitialState()
       result = await cloudbase.kits().request({
         url: `/cms/${kitId}/v1${reqParam.pureUrl}`,
@@ -312,7 +312,7 @@ export async function tcbRequest<T = any>(
       /** 微搭工具箱集成的应用，属于uin级别，对应的Project结构中记录了其所在的环境和kitid */
       let tarEnvId = envId
       let tarKitId = kitId
-      if (isWedaTool() && url !== GET_PROJECTS_PATH) {
+      if (window?.TcbCmsConfig?.multiEnv && url !== GET_PROJECTS_PATH) {
         const currentProject: Project = getCurrentProject()
         if (!currentProject) {
           history.replace('')
@@ -327,7 +327,7 @@ export async function tcbRequest<T = any>(
         }/v1${url}`
 
       const addHeaders: any = {}
-      if (isWedaTool()) {
+      if (isWedaTool()||true) {
         const wedaToolCredentials = auth?.oauth2client?.getCredentialsSync?.()
         if (wedaToolCredentials?.token_type && wedaToolCredentials?.access_token) {
           addHeaders.Authorization = `${wedaToolCredentials.token_type} ${wedaToolCredentials.access_token}`
