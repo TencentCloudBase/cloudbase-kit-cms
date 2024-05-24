@@ -8,7 +8,7 @@ import { redirectTo } from '@/utils'
 import { useConcent } from 'concent'
 import { GlobalCtx } from 'typings/store'
 import { CONFIG_PLATRORM_ENUM } from '@/constants'
-import { isMultiDataEnv, isWedaTool } from '@/common/adapters/weda-tool'
+import { isWedaTool } from '@/common/adapters/weda-tool'
 
 const { Title, Paragraph } = Typography
 
