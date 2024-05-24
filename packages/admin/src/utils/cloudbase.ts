@@ -20,6 +20,7 @@ import { GET_PROJECTS_PATH } from '@/services/project'
 import { getCurrentProject } from './route'
 import { getStorageDownloadInfo, getStorageUploadInfo } from '@/services/project'
 import { isWedaTool } from '@/common/adapters/weda-tool'
+import { initDefaultConfig, isAsyncConfig, saveTcbConfig } from './asyncConfig'
 
 interface IntegrationRes {
   statusCode: number
@@ -27,6 +28,8 @@ interface IntegrationRes {
   body: string
   isBase64Encoded: true | false
 }
+
+initDefaultConfig()
 
 /** 后台接口错误处理函数（当前ts文件无法导入显示节点，所以从外部注入下） */
 let apiErrorHandler: (result?: any, url?: string) => any = () => ''
@@ -321,6 +324,9 @@ export async function tcbRequest<T = any>(
         tarKitId = currentProject?.kitId || kitId
       }
 
+      // 是否需要先异步拉取config文件
+      const needGetConfig = !window?.TcbCmsConfig?.kitId && isAsyncConfig();
+
       // 重置url
       // eslint-disable-next-line no-param-reassign
       url = `https://${tarEnvId || envId}.${region}.kits.tcloudbasegateway.com/cms/${tarKitId || kitId
@@ -365,6 +371,10 @@ export async function tcbRequest<T = any>(
           // })
           return Promise.reject(resultJson?.message || result?.message);
         }
+      } else if(needGetConfig && data?.result?.kitId){
+        window.TcbCmsConfig={...window?.TcbCmsConfig,...data.result};
+        saveTcbConfig();
+        location.reload();
       }
       return data.result
     }

@@ -3,7 +3,7 @@ import { run } from 'concent'
 import { notification, message, Typography, Button } from 'antd'
 import { Context, ResponseError } from 'umi-request'
 import { history, RequestConfig } from 'umi'
-import { codeMessage, CONFIG_PLATRORM_ENUM } from '@/constants'
+import { codeMessage } from '@/constants'
 import { BasicLayoutProps, Settings as LayoutSettings, MenuDataItem } from '@ant-design/pro-layout'
 import { getCurrentUser } from './services/apis'
 import defaultSettings from '../config/defaultSettings'
@@ -19,9 +19,12 @@ import * as models from './models'
 import { getSetting } from './services/global'
 import { IS_KIT_MODE } from './kitConstants'
 import { initWedaTool, isWedaTool } from './common/adapters/weda-tool'
+import { initDefaultConfig } from './utils/asyncConfig'
 
 /** 无头cms没有user概念，这里mock一个 */
 const MOCK_USER_ID = '_mock_user_id'
+
+initDefaultConfig();
 
 /** 微搭工具箱相关适配 */
 if (isWedaTool()) {

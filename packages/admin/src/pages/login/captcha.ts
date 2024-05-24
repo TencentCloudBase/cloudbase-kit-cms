@@ -17,8 +17,8 @@ export interface GetCaptchaResponse {
 /** 验证token本地缓存key */
 const STORAGE_TOKEN_KEY = 'kit_cms_captcha_token'
 
-/** 远端获取验证token地址 */
-const GET_CAPTCHA_URL = `https://${window.TcbCmsConfig.envId}.${window.TcbCmsConfig.region}.auth.tcloudbasegateway.com/auth/v1/captcha/init?client_id=${window.TcbCmsConfig.clientId}`
+/** 远端获取验证token地址（定义为函数，是为了兼容异步获取window.TcbCmsConfig这种情况） */
+const GET_CAPTCHA_URL = ()=>`https://${window.TcbCmsConfig.envId}.${window.TcbCmsConfig.region}.auth.tcloudbasegateway.com/auth/v1/captcha/init?client_id=${window.TcbCmsConfig.clientId}`
 
 /** 储存验证token到本地 */
 export function saveCaptchaToken(token: CaptchaToken) {
@@ -83,7 +83,7 @@ export async function getCaptchaToken(
     }
   }
   const redirectURL = redirectUrl || location.origin + location.pathname
-  const oriRsp = await fetch(GET_CAPTCHA_URL, {
+  const oriRsp = await fetch(GET_CAPTCHA_URL(), {
     method: 'POST',
     body: JSON.stringify({
       redirect_uri: redirectURL,
