@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react'
 import { PlusOutlined } from '@ant-design/icons'
-import { PageContainer } from '@ant-design/pro-layout'
+import { PageContainer, RouteContext, RouteContextType } from '@ant-design/pro-layout'
 import { Button, Modal, Tabs, message, Drawer } from 'antd'
 import ProTable, { ActionType, ProColumns } from '@ant-design/pro-table'
 import { getWebhooks, deleteWebhook } from '@/services/webhook'
@@ -17,7 +17,7 @@ const columns: ProColumns<Webhook>[] = WebhookColumns.map((item) => ({
   align: 'center',
 }))
 
-export default (): React.ReactNode => {
+const Webhook: React.FC<RouteContextType> = (props) => {
   const projectName = getProjectName()
   const [drawerVisible, setDrawerVisible] = useState(false)
   const [selectedWebhook, setSelectedWebhook] = useState<Webhook>()
@@ -99,7 +99,7 @@ export default (): React.ReactNode => {
                 title: '操作',
                 width: 200,
                 align: 'center',
-                fixed: 'right',
+                fixed: props?.isMobile?undefined:'right',
                 valueType: 'option',
                 render: (_: any, row: any): React.ReactNode => [
                   <Button
@@ -166,7 +166,7 @@ export default (): React.ReactNode => {
       </Tabs>
 
       <Drawer
-        width={700}
+        width={props?.isMobile?'100%':700}
         destroyOnClose
         placement="right"
         visible={drawerVisible}
@@ -184,5 +184,15 @@ export default (): React.ReactNode => {
         />
       </Drawer>
     </PageContainer>
+  )
+}
+
+export default function () {
+  return (
+    <RouteContext.Consumer>
+      {(value) => {
+        return <Webhook {...value} />
+      }}
+    </RouteContext.Consumer>
   )
 }

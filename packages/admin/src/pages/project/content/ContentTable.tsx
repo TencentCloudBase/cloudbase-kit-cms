@@ -137,7 +137,7 @@ export const ContentTable: React.FC<{
         title: '操作',
         width: 220,
         align: 'center',
-        fixed: 'right',
+        fixed: ctx?.state?.isMobile?undefined:'right',
         valueType: 'option',
         render: (text, row: any) => [
           <Button
@@ -182,7 +182,7 @@ export const ContentTable: React.FC<{
         ],
       },
     ]
-  }, [currentSchema])
+  }, [currentSchema,ctx?.state?.isMobile])
 
   // 表格多选操作
   const tableAlerRender = useMemo(() => getTableAlertRender(projectName, currentSchema, tableRef), [

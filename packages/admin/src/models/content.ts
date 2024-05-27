@@ -9,6 +9,7 @@ interface ContentState {
   searchFields: any[]
   searchParams: any
   currentSchema: any
+  isMobile:boolean
 }
 
 const state: ContentState = {
@@ -21,6 +22,7 @@ const state: ContentState = {
   searchFields: [],
   searchParams: {},
   currentSchema: {},
+  isMobile:false,
 }
 
 export default {
