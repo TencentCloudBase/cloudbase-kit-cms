@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useConcent } from 'concent'
 import ProCard from '@ant-design/pro-card'
-import { Layout, Button, Space } from 'antd'
+import { Layout, Button, Space, Dropdown, Menu, Divider } from 'antd'
 import { ExportOutlined, ImportOutlined, PlusOutlined } from '@ant-design/icons'
 import { PageContainer } from '@ant-design/pro-layout'
 import { getProjectName } from '@/utils'
@@ -14,6 +14,7 @@ import SchemaEditor from './SchemaEditor'
 import SchemaFieldPicker from './SchemaFieldPicker'
 import './index.less'
 import { IS_KIT_MODE } from '@/kitConstants'
+import { WEDA_DATASOURCE_PATH, isWedaTool } from '@/common/adapters/weda-tool'
 
 export interface TableListItem {
   key: number
@@ -41,20 +42,49 @@ export default (): React.ReactNode => {
     ctx.mr.getSchemas(projectName)
   }, [])
 
+  // 微搭平台引流
+  const wedaGuid=useMemo(()=>(
+    <Menu>
+      <Menu.Item key='datasource' onClick={()=>window.open(`${WEDA_DATASOURCE_PATH}?showType=create`)}>
+        <div style={{width:280}}>
+          <div style={{fontSize:16,fontWeight:'bold',marginBottom:4}}>新建云开发数据模型(推荐)</div>
+          <div>支持表格视图管理、类型校验、关联关系、自动解析、云开发SDK访问</div>
+        </div>
+      </Menu.Item>
+      <Divider style={{margin:0}}/>
+      <Menu.Item key='cms' onClick={()=>ctx.mr.createSchema()}>
+        <div style={{width:280}}>
+          <div style={{fontSize:16,fontWeight:'bold',marginBottom:4}}>新建CMS模型</div>
+          <div>CMS模型，仅支持数据管理</div>
+          <div>　</div>
+        </div>
+      </Menu.Item>
+    </Menu>
+  ), []);
+
   return (
     <PageContainer
       className="schema-page-container"
       extra={
         <Space>
-          <Button
-            type="primary"
-            onClick={() => {
-              ctx.mr.createSchema()
-            }}
-          >
-            <PlusOutlined />
-            新建模型
-          </Button>
+          {
+            isWedaTool()
+            ? <Dropdown overlay={wedaGuid} key="search">
+                <Button type="primary">
+                  <PlusOutlined />
+                  新建模型
+                </Button>
+              </Dropdown>
+            : <Button
+                type="primary"
+                onClick={() => {
+                  ctx.mr.createSchema()
+                }}
+              >
+                <PlusOutlined />
+                新建模型
+              </Button>
+          }
           <Button type="primary" onClick={() => setExportVisible(true)}>
             <ExportOutlined />
             导出模型

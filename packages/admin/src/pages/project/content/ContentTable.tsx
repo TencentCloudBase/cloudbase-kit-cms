@@ -23,6 +23,7 @@ import DataExport from './DataExport'
 import { IS_KIT_MODE, TEMP_SAVE_CONDITIONS } from '@/kitConstants'
 import { updateSearchConditions } from '@/services/schema'
 import { SearchConditions } from 'typings/field'
+import { WEDA_DATASOURCE_PATH, isWedaTool } from '@/common/adapters/weda-tool'
 
 const { Option } = Select
 
@@ -192,6 +193,11 @@ export const ContentTable: React.FC<{
   // 表格 ToolBar
   const toolBarRender = useMemo(
     () => [
+      isWedaTool() && currentSchema?.databaseType === 'cloud'
+      ? <Button type="primary" onClick={()=>window.open(`${WEDA_DATASOURCE_PATH}?showType=create&createType=cms&cmsProject=${projectName}&cmsModel=${currentSchema.collectionName}`)}>
+          导出到云开发数据模型
+        </Button>
+      : undefined,
       <Dropdown overlay={searchFieldMenu} key="search">
         <Button type="primary">
           <FilterOutlined /> 增加检索
@@ -228,7 +234,7 @@ export const ContentTable: React.FC<{
         searchParams={searchParams}
         collectionName={currentSchema.collectionName}
       />,
-    ],
+    ].filter(item=>!!item),
     [currentSchema, searchParams, searchFields]
   )
 

@@ -5,6 +5,9 @@ export function isWedaTool() {
   return window?.TcbCmsConfig?.platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL;
 }
 
+/** 微搭平台模型界面路由 */
+export const WEDA_DATASOURCE_PATH = '/cloud-admin/#/management/data-model';
+
 /** 微搭工具箱平台适配 */
 export async function initWedaTool() {
   if (!isWedaTool()) {
