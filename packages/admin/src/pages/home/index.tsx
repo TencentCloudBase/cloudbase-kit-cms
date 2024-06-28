@@ -5,7 +5,7 @@ import { useRequest, useAccess } from 'umi'
 import { useLocalStorageState } from '@umijs/hooks'
 import { RouteContext, RouteContextType } from '@ant-design/pro-layout'
 import { setTwoToneColor, AppstoreOutlined, UnorderedListOutlined } from '@ant-design/icons'
-import { Modal, Form, Input, Space, Button, message, Tooltip, Typography, Empty } from 'antd'
+import { Modal, Form, Input, Space, Button, message, Tooltip, Typography, Empty, Card } from 'antd'
 import { getProjects, createProject } from '@/services/project'
 import { getPageQuery } from '@/utils'
 import ProjectListView from './ProjectListView'
@@ -14,7 +14,7 @@ import HomePageContainer from './HomePageContainer'
 import './index.less'
 import { useConcent } from 'concent'
 import { GlobalCtx } from 'typings/store'
-import { isWedaTool } from '@/common/adapters/weda-tool'
+import { WEDA_DATASOURCE_PATH, isWedaTool } from '@/common/adapters/weda-tool'
 
 // 设置图标颜色
 setTwoToneColor('#0052d9')
@@ -138,6 +138,18 @@ const Home: React.FC<RouteContextType> = (props) => {
       ) : (
         <ProjectListView projects={data} onCreateProject={showCreatingModal} />
       )}
+
+      {
+        isAdmin && isWedaTool() && (
+          <Card bordered={true} style={{marginTop:20}}>
+            <div style={{marginBottom:20}}>
+              <div style={{fontSize:16,marginBottom:10}}>🎉体验云开发全新数据管理能力</div>
+              <div style={{marginBottom:16}}>基于云开发数据，建立数据模型，自带管理界面、类型校验、权限管理、SDK访问</div>
+              <Button type='primary' onClick={()=>window.open(`${WEDA_DATASOURCE_PATH}`)}>前往使用</Button>
+            </div>
+          </Card>
+        )
+      }
 
       {/* 新项目创建 */}
       {isAdmin && (
