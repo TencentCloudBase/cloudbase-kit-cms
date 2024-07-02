@@ -16,7 +16,8 @@ export async function initWedaTool() {
 
   // 微搭应用菜单栏sdk
   await requireJsSdk(
-    'https://qbase.cdn-go.cn/lcap/lcap-resource-cdngo/-/0.1.4/_files/static/weda-page-module-sdk/weda.tools.sdk.js'
+    // 'https://qbase.cdn-go.cn/lcap/lcap-resource-cdngo/-/0.1.4/_files/static/weda-page-module-sdk/weda.tools.sdk.js'
+    'https://weda.cloud.tencent.com/workbench/rainbowConfig.js'
   )
 
   // 这段逻辑必须确保weda.tools.sdk成功加载
