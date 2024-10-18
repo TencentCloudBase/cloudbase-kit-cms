@@ -26,3 +26,10 @@ export function copyToClipboard(str: string, execCommand?: Document['execCommand
     document.getSelection()?.addRange(selected)
   }
 }
+
+/** 加载远端text */
+export async function fetchText(url:string) {
+  const result = await fetch(url);
+  const resultText = await result.text();
+  return resultText;
+}

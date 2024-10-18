@@ -1,12 +1,28 @@
 import { CONFIG_PLATRORM_ENUM } from '@/constants'
+import { fetchText } from '@/utils';
 
 /** 当前是否为微搭平台 */
 export function isWedaTool() {
   return window?.TcbCmsConfig?.platform === CONFIG_PLATRORM_ENUM.WEDA_TOOL;
 }
 
-/** 微搭平台模型界面路由 */
-export const WEDA_DATASOURCE_PATH = '/cloud-admin/#/management/data-model';
+let wedaToolCfg: any = null;
+async function getWedaToolConfig() {
+  if(!wedaToolCfg) {
+    const cfgJson = await fetchText("https://cloud-public-static-1258016615.cos.ap-shanghai.myqcloud.com/kit-cms-assets/weda-tool-cfg.json");
+    try{
+      wedaToolCfg=JSON.parse(cfgJson);
+    } catch(e){}
+  }
+  return wedaToolCfg;
+}
+
+/** 获取数据源界面的默认跳转链接 */
+export async function getDatasourcePath(): Promise<string> {
+  const config = await getWedaToolConfig();
+  const dsPath = (config?.datasourcePath as string)?.replace(/{{envId}}/g, window?.TcbCmsConfig?.envId);
+  return dsPath || '/cloud-admin/#/management/data-model';
+}
 
 /** 微搭工具箱平台适配 */
 export async function initWedaTool() {
@@ -14,10 +30,13 @@ export async function initWedaTool() {
     return
   }
 
+  // 加载微搭工具箱远端配置
+  const config = await getWedaToolConfig().catch(e=>null);
+
   // 微搭应用菜单栏sdk
   await requireJsSdk(
     // 'https://qbase.cdn-go.cn/lcap/lcap-resource-cdngo/-/0.1.4/_files/static/weda-page-module-sdk/weda.tools.sdk.js'
-    'https://weda.cloud.tencent.com/workbench/rainbowConfig.js'
+    config?.menuSdk || 'https://weda.cloud.tencent.com/workbench/rainbowConfig.js'
   )
 
   // 这段逻辑必须确保weda.tools.sdk成功加载
@@ -29,7 +48,7 @@ export async function initWedaTool() {
   if (!window?.cloudbase) {
     const { region, envId, clientId } = window.TcbCmsConfig
     await requireJsSdk(
-      'https://static.cloudbase.net/cloudbase-js-sdk/2.4.7-beta.0/cloudbase.full.js?v=1'
+      config?.cloudBaseSdk || 'https://static.cloudbase.net/cloudbase-js-sdk/2.4.7-beta.0/cloudbase.full.js?v=1'
     )
 
     // 导入js后，window上会自动挂在cloudbase

@@ -1,0 +1,58 @@
+.markdown-preview {
+  border: 0px;
+
+  .vditor-reset {
+    padding: 0px;
+  }
+
+  // 隐藏头部工具栏（工具栏设置空列表，还是会有一条线）
+  .vditor-toolbar {
+    display: none;
+  }
+
+  // 预览模式下，调整不透明度为0
+  .vditor-wysiwyg pre.vditor-reset[contenteditable=false] {
+    opacity: 1;
+  }
+
+  .vditor-wysiwyg__block {
+    >pre:first-child {
+      display: none!important; // 去除原代码
+    }
+    .vditor-wysiwyg__preview {
+      margin: 0px!important; // 去除显示区域的margin属性
+      >:first-child {
+        margin: 0px!important; // 去除外部pre导致的内部pre代码块异常
+      }
+      pre:first-child{
+        margin: 0px!important; // 存在代码嵌套时，里面的pre标签会因为vditor中的选择器（vditor-wysiwyg__block pre:first-child）而产生margin属性
+      }
+    }
+  }
+
+  // 隐藏删除代码等操作图标
+  .vditor-panel {
+    display: none;
+    width: 0px;
+    height: 0px;
+    overflow: hidden;
+  }
+  
+  // 隐藏代码块类型图标
+  .vditor-wysiwyg div.vditor-wysiwyg__block:before {
+    content: none;
+  }
+
+  // 将鼠标样式调整为自动
+  .vditor-wysiwyg__preview {
+    cursor: auto;
+  }
+
+  // 去除预览区域padding和背景色
+  .vditor-content {
+    .vditor-reset {
+      padding: 0px!important;
+      background-color: #00000000;
+    }
+  }
+}

@@ -23,7 +23,7 @@ import DataExport from './DataExport'
 import { IS_KIT_MODE, TEMP_SAVE_CONDITIONS } from '@/kitConstants'
 import { updateSearchConditions } from '@/services/schema'
 import { SearchConditions } from 'typings/field'
-import { WEDA_DATASOURCE_PATH, isWedaTool } from '@/common/adapters/weda-tool'
+import { getDatasourcePath, isWedaTool } from '@/common/adapters/weda-tool'
 
 const { Option } = Select
 
@@ -194,7 +194,10 @@ export const ContentTable: React.FC<{
   const toolBarRender = useMemo(
     () => [
       isWedaTool() && currentSchema?.databaseType === 'cloud'
-      ? <Button type="primary" onClick={()=>window.open(`${WEDA_DATASOURCE_PATH}?showType=create&createType=cms&cmsProject=${projectName}&cmsModel=${currentSchema.collectionName}`)}>
+      ? <Button type="primary" onClick={async ()=>{
+          const dsPath = await getDatasourcePath();
+          window.open(`${dsPath}?showType=create&createType=cms&cmsProject=${projectName}&cmsModel=${currentSchema.collectionName}`)
+        }}>
           导出到云开发数据模型
         </Button>
       : undefined,

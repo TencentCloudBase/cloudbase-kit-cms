@@ -14,7 +14,7 @@ import SchemaEditor from './SchemaEditor'
 import SchemaFieldPicker from './SchemaFieldPicker'
 import './index.less'
 import { IS_KIT_MODE } from '@/kitConstants'
-import { WEDA_DATASOURCE_PATH, isWedaTool } from '@/common/adapters/weda-tool'
+import { getDatasourcePath, isWedaTool } from '@/common/adapters/weda-tool'
 
 export interface TableListItem {
   key: number
@@ -45,7 +45,10 @@ export default (): React.ReactNode => {
   // 微搭平台引流
   const wedaGuid=useMemo(()=>(
     <Menu>
-      <Menu.Item key='datasource' onClick={()=>window.open(`${WEDA_DATASOURCE_PATH}?showType=create`)}>
+      <Menu.Item key='datasource' onClick={async ()=>{
+          const dsPath = await getDatasourcePath();
+          window.open(`${dsPath}?showType=create`)
+        }}>
         <div style={{width:280}}>
           <div style={{fontSize:16,fontWeight:'bold',marginBottom:4}}>新建云开发数据模型(推荐)</div>
           <div>支持表格视图管理、类型校验、关联关系、自动解析、云开发SDK访问</div>
