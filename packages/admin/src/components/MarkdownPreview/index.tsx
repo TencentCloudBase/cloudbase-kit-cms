@@ -9,6 +9,7 @@ export const MarkdownPreview: React.FC<{
   id: number;
   value?: any;
   url?: string;
+  onLoad?: ()=>any;
 }> = (props) => {
   const { id = 'default', url } = props;
   const [value, setValue] = useState(props?.value);
@@ -64,6 +65,7 @@ export const MarkdownPreview: React.FC<{
       cache: {
         enable: false,
       },
+      after: props?.onLoad,
     });
     vditor.disabled();
     // return ()=>vditor.destroy();

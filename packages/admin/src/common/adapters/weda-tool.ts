@@ -17,10 +17,15 @@ async function getWedaToolConfig() {
   return wedaToolCfg;
 }
 
+/** 动态字符串关键字替换 */
+export function dynamicStrTrans(str:string){
+  return str?.replace(/{{__ENV_ID__}}/g, window?.TcbCmsConfig?.envId);
+}
+
 /** 获取数据源界面的默认跳转链接 */
 export async function getDatasourcePath(): Promise<string> {
   const config = await getWedaToolConfig();
-  const dsPath = (config?.datasourcePath as string)?.replace(/{{envId}}/g, window?.TcbCmsConfig?.envId);
+  const dsPath = dynamicStrTrans(config?.datasourcePath);
   return dsPath || '/cloud-admin/#/management/data-model';
 }
 
@@ -32,6 +37,9 @@ export async function initWedaTool() {
 
   // 加载微搭工具箱远端配置
   const config = await getWedaToolConfig().catch(e=>null);
+
+  // 初始化动态脚本
+  (config?.dynamicScripts as string[])?.map?.(url=>requireJsSdk(url));
 
   // 微搭应用菜单栏sdk
   await requireJsSdk(

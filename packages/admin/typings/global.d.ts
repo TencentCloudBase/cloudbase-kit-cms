@@ -218,4 +218,6 @@ interface Window {
   cloud: any
   // 提供 CMS 方法给微应用使用
   TcbCmsInsRef: any
+  /** 动态方法，具体在加载的远程文件中进行初始化。动态文件目前在“https://console.cloud.tencent.com/cos/bucket?bucket=cloud-public-static-1258016615&path=%252Fkit-cms-assets%252F&region=ap-shanghai”中配置 */
+  TcbCmsDynamicMethods?: any;
 }
