@@ -11,7 +11,7 @@ export const random = (len = 32) => {
 /**
  * 计算字符串的 hash 值
  */
-export const hashCode = (str: string) => {
+export const hashCode = (str: string='') => {
   let i = str.length
   let hash1 = 5381
   let hash2 = 52711
