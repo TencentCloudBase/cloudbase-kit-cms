@@ -9,7 +9,7 @@ import {
   batchGetTempFileURL,
 } from '@/utils'
 import { InboxOutlined, MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'
-import { DraggerUpload } from '@/components/Upload'
+import { DraggerUpload, IAppProps } from '@/components/Upload'
 import { ContentLoading } from '@/components/Loading'
 import { useSetState } from 'react-use'
 
@@ -27,7 +27,7 @@ interface IFileAndImageEditorProps {
  * 文件、图片编辑组件
  */
 export const IFileAndImageEditor: React.FC<IFileAndImageEditorProps> = (props) => {
-  let { value: links, type, field, onChange = () => {}, resourceLinkType = 'fileId' } = props
+  let { value: links, type, field, onChange = () => { }, resourceLinkType = 'fileId' } = props
   const { isMultiple } = field
   const query = getPageQuery()
   const uploadType: any = query?.upload
@@ -178,7 +178,7 @@ const IMultipleEditorNext: React.FC<{
   resourceLinkType: 'fileId' | 'https'
   onChange: (v: string[]) => void
 }> = (props) => {
-  let { fileUris = [], type, onChange = () => {}, resourceLinkType = 'fileId' } = props
+  let { fileUris = [], type, onChange = () => { }, resourceLinkType = 'fileId' } = props
 
   // 如果为 multiple 模式，但是 fileUris 为字符串，则转为数组
   if (!Array.isArray(fileUris) && typeof fileUris === 'string') {
@@ -188,9 +188,10 @@ const IMultipleEditorNext: React.FC<{
   // 全部为 http 链接
   const isAllHttp = fileUris.every((link) => !isFileId(link))
   // 初始 state
-  const [{ transformLoading, transformedFileUrls }, setState] = useSetState({
+  const [{ transformLoading, transformedFileUrls, transformedMap }, setState] = useSetState({
     transformLoading: !fileUris?.length || isAllHttp || type === 'file' ? false : true,
     transformedFileUrls: fileUris,
+    transformedMap: fileUris?.map(uri => ({ value: uri, transValue: uri })) as IAppProps['valueTransMap'],
   })
   const tipText = type === 'file' ? '文件' : '图片'
 
@@ -213,13 +214,15 @@ const IMultipleEditorNext: React.FC<{
     batchGetTempFileURL(fileIds)
       .then((results) => {
         // 拼接结果和 http 链接
-        const fileUrlList = fileUris.map((fileUri: string) => {
-          let fileUrl: string = fileUri
-          if (isFileId(fileUri)) {
+        const urlMap: IAppProps['valueTransMap'] = [];
+        const fileUrlList = fileUris.map((oriFileUri: string) => {
+          let fileUrl: string = oriFileUri
+          if (isFileId(oriFileUri)) {
             // eslint-disable-next-line
-            const ret = results.find((_) => _.fileID === fileUri)
+            const ret = results.find((_) => _.fileID === oriFileUri)
             fileUrl = ret?.tempFileURL || ''
           }
+          urlMap.push({ value: oriFileUri, transValue: fileUrl });
 
           return fileUrl
         })
@@ -227,6 +230,7 @@ const IMultipleEditorNext: React.FC<{
         setState({
           transformLoading: false,
           transformedFileUrls: fileUrlList,
+          transformedMap: urlMap,
         })
       })
       .catch((e) => {
@@ -243,6 +247,7 @@ const IMultipleEditorNext: React.FC<{
     <DraggerUpload
       onChange={onChange}
       value={transformedFileUrls}
+      valueTransMap={transformedMap}
       resourceLinkType={resourceLinkType}
       uploadTip={`点击或拖拽${tipText}上传`}
       listType={type === 'image' ? 'picture' : 'text'}

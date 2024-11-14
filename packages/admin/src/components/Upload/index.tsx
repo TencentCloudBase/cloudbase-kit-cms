@@ -12,6 +12,9 @@ export interface IAppProps {
    */
   value?: string[]
 
+  /** 数据转化字典 */
+  valueTransMap?: { value: string, transValue: string }[]
+
   /**
    * 上传提示文字
    */
@@ -48,12 +51,15 @@ export function DraggerUpload({
   uploadType,
   filePathTemplate,
   resourceLinkType = 'fileId',
+  valueTransMap,
   ...uploadProps
 }: IAppProps & Omit<UploadProps, keyof IAppProps>) {
-  const [{ fileList }, setState] = useSetState<{
-    fileList: any[]
+  const [{ fileList, transMap }, setState] = useSetState<{
+    fileList: any[],
+    transMap?: IAppProps['valueTransMap'],
   }>({
     fileList: [],
+    transMap: [],
   })
 
   // 首次加载时，初始化 fileList
@@ -66,6 +72,7 @@ export function DraggerUpload({
         response: url,
         uid: String(index),
         name: getFileNameFromUrl(url),
+        oriUrl: valueTransMap?.find(item => item.transValue === url)?.value || url,
       })) || []
 
     setState({
@@ -73,17 +80,21 @@ export function DraggerUpload({
     })
   }, [])
 
+  function getRealUrl(file: { url: string; oriUrl?: string }) {
+    return file?.oriUrl || transMap?.find(item => item?.transValue === file.url)?.value || file.url;
+  }
+
   return (
     <Dragger
       multiple
       fileList={fileList}
       onRemove={(file) => {
         const newFileList: any = fileList.filter((_) => _.uid !== file.uid)
-        const urls = newFileList.map((file: any) => file.url || file.response)
+        const newFiles = newFileList.map((file: any) => ({ ...file, url: file.url || file.response }))
 
-        onChange?.(urls)
+        onChange?.(newFiles.map((fileItem: any) => getRealUrl(fileItem)))
         setState({
-          fileList: newFileList,
+          fileList: newFileList.map((fileItem: { url: string }) => fileItem.url),
         })
       }}
       onChange={({ fileList }) => {
@@ -98,9 +109,9 @@ export function DraggerUpload({
 
         const fileUriList = newFileList
           .filter((_) => _.response || _.status === 'done')
-          .map((_) => _.response || _.url)
+          .map((_) => ({ ..._, url: _.response || _.url }))
 
-        onChange?.(fileUriList)
+        onChange?.(fileUriList?.map(url => getRealUrl(url)))
         setState({ fileList: newFileList })
       }}
       customRequest={(options) => {
@@ -120,7 +131,8 @@ export function DraggerUpload({
           .then(({ fileId, url }) => {
             // 返回值
             const resourceLink = resourceLinkType === 'fileId' ? fileId : url
-            onSuccess?.(resourceLink, file as any)
+            setState({ transMap: [...(transMap || []), { value: resourceLink, transValue: url }] })
+            onSuccess?.(url, file as any)
           })
           .catch((e) => {
             onError?.(e as any)
