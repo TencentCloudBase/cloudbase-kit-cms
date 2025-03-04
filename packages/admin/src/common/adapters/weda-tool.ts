@@ -1,4 +1,5 @@
 import { CONFIG_PLATRORM_ENUM } from '@/constants'
+import { REMOTE_RESOURCE_BASE_PATH } from '@/kitConstants';
 import { fetchText } from '@/utils';
 
 /** 当前是否为微搭平台 */
@@ -9,7 +10,7 @@ export function isWedaTool() {
 let wedaToolCfg: any = null;
 async function getWedaToolConfig() {
   if(!wedaToolCfg) {
-    const cfgJson = await fetchText("https://cloud-public-static-1258016615.cos.ap-shanghai.myqcloud.com/kit-cms-assets/weda-tool-cfg.json");
+    const cfgJson = await fetchText(`${REMOTE_RESOURCE_BASE_PATH}/weda-tool-cfg.json`);
     try{
       wedaToolCfg=JSON.parse(cfgJson);
     } catch(e){}

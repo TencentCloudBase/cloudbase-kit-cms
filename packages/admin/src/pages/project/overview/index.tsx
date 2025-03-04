@@ -2,6 +2,7 @@ import React from 'react'
 import { Card } from 'antd'
 import { PageContainer } from '@ant-design/pro-layout'
 import MarkdownPreview from '@/components/MarkdownPreview'
+import { REMOTE_RESOURCE_BASE_PATH } from '@/kitConstants'
 
 export default (): React.ReactNode => {
   return (
@@ -9,7 +10,7 @@ export default (): React.ReactNode => {
       <Card>
         <MarkdownPreview
           id={Math.random()}
-          url='https://cloud-public-static-1258016615.cos.ap-shanghai.myqcloud.com/kit-cms-assets/overview.html'
+          url={`${REMOTE_RESOURCE_BASE_PATH}/overview.html`}
           onLoad={window?.TcbCmsDynamicMethods?.onOverviewCardLoaded}
         />
       </Card>

@@ -16,6 +16,7 @@ import { useConcent } from 'concent'
 import { GlobalCtx } from 'typings/store'
 import { getDatasourcePath, isWedaTool } from '@/common/adapters/weda-tool'
 import MarkdownPreview from '@/components/MarkdownPreview'
+import { REMOTE_RESOURCE_BASE_PATH } from '@/kitConstants'
 
 // 设置图标颜色
 setTwoToneColor('#0052d9')
@@ -155,7 +156,7 @@ const Home: React.FC<RouteContextType> = (props) => {
             </Card> */}
             <MarkdownPreview
               id={Math.random()}
-              url='https://cloud-public-static-1258016615.cos.ap-shanghai.myqcloud.com/kit-cms-assets/home.html'
+              url={`${REMOTE_RESOURCE_BASE_PATH}/home.html`}
               onLoad={window?.TcbCmsDynamicMethods?.onHomeCardLoaded}
             />
           </>
